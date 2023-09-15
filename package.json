@@ -1,0 +1,18 @@
+{
+  "name": "pnpm-monorepo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "pnpm --stream -r start",
+    "start:dev": "pnpm --stream -r run start:dev"
+  },
+  "dependencies": {
+    "app": "workspace:*",
+    "server": "workspace:*"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
