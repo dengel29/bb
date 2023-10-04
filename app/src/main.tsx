@@ -8,7 +8,7 @@ import { SignInForm } from "./SignInForm.tsx";
 
 const router = createBrowserRouter([
   {
-    path: "/pp",
+    path: "/",
     element: <App />,
   },
   {
