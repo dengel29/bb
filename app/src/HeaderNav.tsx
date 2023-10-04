@@ -9,7 +9,7 @@ export const HeaderNav = (): JSX.Element => {
       }}
     >
       <button>Hey</button>
-      <button>Create objectives</button>
+      <a href="/create-objectives">Create objectives</a>
       <button>Join a game</button>
       <button>About</button>
       <a href="/sign-in">Sign In</a>
