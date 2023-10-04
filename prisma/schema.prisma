@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Objective {
+  id              Int              @id @default(autoincrement())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  countable       Boolean          @default(false)
+  countLimit      Int?
+  displayName     String           @db.VarChar(240)
+  description     String?          @db.VarChar(480)
+  creator         User             @relation(fields: [creatorId], references: [id])
+  creatorId       Int
+  district        District?        @relation(fields: [districtId], references: [id])
+  districtId      Int?
+  boardObjectives BoardObjective[]
+
+  @@map("objectives")
+}
+
+model BoardPlayer {
+  userId          Int
+  boardId         String
+  boardObjectives BoardObjective[]
+  board           Board            @relation(fields: [boardId], references: [id])
+  user            User             @relation(fields: [userId], references: [id])
+
+  @@id([userId, boardId], name: "boardPlayerId")
+  @@map("boardPlayers")
+}
+
+model BoardObjective {
+  cellX             Int
+  cellY             Int
+  claimedRealTime   DateTime?
+  board             Board        @relation(fields: [boardId], references: [id])
+  boardId           String
+  objective         Objective    @relation(fields: [objectiveId], references: [id])
+  objectiveId       Int
+  claimedBy         BoardPlayer? @relation(fields: [claimedByPlayerId, boardId], references: [userId, boardId])
+  claimedByPlayerId Int?
+
+  @@id([boardId, objectiveId], name: "boardObjectiveId")
+  @@map("boardObjectives")
+}
+
+model Board {
+  id              String           @id @default(uuid())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  password        String
+  name            String
+  seed            Int?             @default(dbgenerated("RANDOM()*(100000000 - 2) + 2"))
+  timeLimit       Int?
+  gameType        GameType         @default(LOCKOUT)
+  createdBy       User             @relation(fields: [createdById], references: [id])
+  createdById     Int
+  boardObjectives BoardObjective[]
+  boardPlayers    BoardPlayer[]
+
+  @@map("boards")
+}
+
+model District {
+  id         Int         @id @default(autoincrement())
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  name       String
+  cityId     Int
+  city       City        @relation(fields: [cityId], references: [id])
+  objectives Objective[]
+
+  @@map("districts")
+}
+
+model City {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  name      String
+  countryId Int
+  country   Country    @relation(fields: [countryId], references: [id])
+  districts District[]
+  users     User[]
+
+  @@map("cities")
+}
+
+model Country {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  cities    City[]
+  users     User[]
+
+  @@map("countries")
+}
+
+model User {
+  id            Int           @id @default(autoincrement())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  email         String        @unique
+  username      String?       @unique @db.VarChar(36)
+  firstName     String?       @db.VarChar(80)
+  lastName      String?       @db.VarChar(80)
+  boardPlayers  BoardPlayer[]
+  objectives    Objective[]
+  city          City?         @relation(fields: [cityId], references: [id])
+  cityId        Int?
+  country       Country?      @relation(fields: [countryId], references: [id])
+  countryId     Int?
+  boardsCreated Board[]
+
+  @@map("users")
+}
+
+model Session {
+  sid    String   @id @unique
+  sess   Json
+  expire DateTime
+
+  @@map("sessions")
+}
+
+enum GameType {
+  STANDARD
+  LOCKOUT
+  BLACKOUT
+}

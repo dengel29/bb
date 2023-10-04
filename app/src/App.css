@@ -5,6 +5,18 @@
   text-align: center;
 }
 
+.cell__mine {
+  background-color: #61dafb;
+}
+
+.cell__theirs {
+  background-color: plum;
+}
+
+.cell__noOwner {
+  background-color: beige;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

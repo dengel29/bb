@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "name": "shared",
+  "description": "Shared Types + Functions",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.3.1"
+  }
+}
