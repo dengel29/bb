@@ -1,23 +1,32 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import App from "./App.tsx";
 import "./index.css";
 import { CreateObjectivesForm } from "./CreateObjectivesForm.tsx";
-import { SignInForm } from "./SignInForm.tsx";
+import { SignInPage } from "./SignInPage.tsx";
+import { HomePage } from "./Home.tsx";
+import { CreateGamePage } from "./CreateGamePage";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <HomePage />,
+  },
+  {
+    path: "/home",
+    element: <HomePage />,
   },
   {
     path: "/create-objectives",
     element: <CreateObjectivesForm />,
   },
   {
+    path: "/play",
+    element: <CreateGamePage />,
+  },
+  {
     path: "/sign-in",
-    element: <SignInForm />,
+    element: <SignInPage />,
   },
 ]);
 

@@ -1,26 +1,20 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-import "@radix-ui/themes/styles.css";
-import { Theme, Text, Container } from "@radix-ui/themes";
+import { Container } from "@radix-ui/themes";
+import { useState } from "react";
+import { Score } from "shared/types";
 import { Board } from "./Board";
 import { socket } from "./socket";
-import { Score } from "shared/types";
-import { CreateBoardForm } from "./CreateBoardForm";
-import { HeaderNav } from "./HeaderNav";
-// import { ConnectionState } from './ConnectionState';
 
 const id = Math.floor(
   Math.random() * 10 + Math.random() * 10 * Math.random() * 10
 );
 
-function App(): JSX.Element {
-  // const [isConnected, setIsConnected] = useState<boolean>(socket.connected);
-  // const [isViewTransition, setIsViewTransition] = useState("");
+export const BoardPage = () => {
   const initialScore: Score = new Map([
     ["mine", new Set()],
     ["theirs", new Set()],
   ]);
   const [score, setScore] = useState(initialScore);
+
   const [messages, setMessages] = useState<
     { message: string; cellId: number }[]
   >([]);
@@ -48,8 +42,6 @@ function App(): JSX.Element {
     socket.emit("cellClicked", { cellId, eventType, userId: id });
   };
 
-  // const createRoom = ({})
-
   socket.on("colorCell", (payload) => {
     const newMessages = [...messages];
     newMessages.push({
@@ -75,51 +67,9 @@ function App(): JSX.Element {
     setMessages(newMessages);
   });
 
-  // setIsViewTransition(
-  //   "Opss, Your browser doesn't support View Transitions API"
-  // );
-  // if (document.startViewTransition) {
-  //   setIsViewTransition("Yess, Your browser support View Transitions API");
-  // }
-
-  useEffect(() => {
-    function onConnect(): void {
-      // setIsConnected(true);
-    }
-
-    function onDisconnect(): void {
-      // setIsConnected(false);
-    }
-
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-
-    return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-    };
-  }, []);
-
   return (
-    <Theme>
-      {/* <ConnectionState isConnected={isConnected} id={id} messages={messages} /> */}
-      <HeaderNav />
-      <div className={"App"}>
-        <div>
-          <CreateBoardForm></CreateBoardForm>
-          <Text size={"9"}>Welcome to Bingo bike</Text>
-          <br />
-          <Text size={"7"}>
-            A globally available bingo game you play in your city
-          </Text>
-          <Container size="2">
-            <Board broadcastClick={broadcastClick} score={score}></Board>
-          </Container>
-          {/* <p>{isViewTransition}</p> */}
-        </div>
-      </div>
-    </Theme>
+    <Container size="2">
+      <Board broadcastClick={broadcastClick} score={score}></Board>
+    </Container>
   );
-}
-
-export default App;
+};

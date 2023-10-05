@@ -1,0 +1,14 @@
+.width-lg {
+  width: var(--size-lg);
+}
+
+.flex-even-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+
+  & > * {
+    margin-inline: 10px;
+    text-align: center;
+  }
+}

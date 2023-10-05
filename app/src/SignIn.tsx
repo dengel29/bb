@@ -3,7 +3,6 @@ import { useRef } from "react";
 const SignIn = (): JSX.Element => {
   const email = useRef<HTMLInputElement>(null);
   const submitEmail = () => {
-    console.log("ANYTHUING");
     console.log(email.current?.value);
     fetch(`http://localhost:3000/auth/magiclogin`, {
       method: `POST`,

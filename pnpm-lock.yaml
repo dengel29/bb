@@ -27,6 +27,9 @@ importers:
       '@radix-ui/themes':
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@18.2.7)(@types/react@18.2.21)(react-dom@18.2.0)(react@18.2.0)
+      open-props:
+        specifier: ^1.6.4
+        version: 1.6.4
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -3105,6 +3108,10 @@ packages:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
     dependencies:
       wrappy: 1.0.2
+
+  /open-props@1.6.4:
+    resolution: {integrity: sha512-7FzGHQMCxUkF1sG45zIN5ZkOISPRFHaOtWGiF6LK/tAdeJBYVOl5yuZdPFoJkCr+wYAmLPv6tCu40pX3MjJXKw==}
+    dev: false
 
   /optionator@0.9.3:
     resolution: {integrity: sha512-JjCoypp+jKn1ttEFExxhetCKeJt9zhAgAve5FXHixTvFDW/5aEktX9bufBKLRRMdU7bNtpLfcGu94B3cdEJgjg==}

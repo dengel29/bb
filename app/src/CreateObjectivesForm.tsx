@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { CreateObjectiveDTO } from "shared/types";
+import { PageContainer } from "./PageContainer";
 
 const ObjectiveInputSet = ({
   setId,
@@ -142,47 +143,42 @@ export const CreateObjectivesForm = (): JSX.Element => {
   }
 
   return (
-    <div
-      style={{
-        maxWidth: "100%",
-        display: "flex",
-        flexDirection: "column",
-        margin: "auto",
-      }}
-    >
-      <form
-        ref={createObjectivesForm}
-        onSubmit={submitHandler}
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          flexDirection: "column",
-        }}
-      >
-        {[...objectiveIds].map((inputSetId) => {
-          return (
-            <ObjectiveInputSet
-              key={inputSetId}
-              setId={inputSetId}
-              removeItem={removeObjective}
-            />
-          );
-        })}
-        <button
-          type="button"
-          onClick={() => {
-            console.log("what");
-            const newObjectiveIds = new Set(objectiveIds).add(
-              objectiveIds.size
-            );
-            setObjectiveIds(newObjectiveIds);
+    <PageContainer title={"Create Objectives"}>
+      <div>
+        <form
+          ref={createObjectivesForm}
+          onSubmit={submitHandler}
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
           }}
         >
-          +
-        </button>
-        <br />
-        <button type="submit">Submit</button>
-      </form>
-    </div>
+          {[...objectiveIds].map((inputSetId) => {
+            return (
+              <ObjectiveInputSet
+                key={inputSetId}
+                setId={inputSetId}
+                removeItem={removeObjective}
+              />
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => {
+              console.log("what");
+              const newObjectiveIds = new Set(objectiveIds).add(
+                objectiveIds.size
+              );
+              setObjectiveIds(newObjectiveIds);
+            }}
+          >
+            +
+          </button>
+          <br />
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </PageContainer>
   );
 };
