@@ -1,18 +1,14 @@
+import { Link } from "react-router-dom";
+import "./styles/header-nav.css";
+
 export const HeaderNav = (): JSX.Element => {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        width: "100%",
-        justifyContent: "space-evenly",
-      }}
-    >
-      <button>Hey</button>
-      <a href="/create-objectives">Create objectives</a>
-      <button>Join a game</button>
+    <div className="full-width flex-even-row">
+      <Link to="/">Home</Link>
+      <Link to="/create-objectives">Create objectives</Link>
+      <Link to="/play">Join a game</Link>
       <button>About</button>
-      <a href="/sign-in">Sign In</a>
+      <Link to="/sign-in">Sign In</Link>
     </div>
   );
 };
