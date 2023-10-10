@@ -1,5 +1,4 @@
 import passport from "passport";
-// import MagicLink from "passport-magic-link";
 import MagicLoginStrategy from "passport-magic-login";
 import { config } from "../config";
 import { sendEmail } from "./email-actions";
@@ -21,7 +20,7 @@ export const magicLogin = new MagicLoginStrategy({
       to: destination,
       from: "dan@dngl.cc",
       subject: "Sign In, bb",
-      textBody: `Click this link to finish logging in: http://localhost:3000${href}`,
+      textBody: `Click this link to finish logging in: http://localhost:3000${href}&email=${destination}`,
     });
   },
 
@@ -33,9 +32,7 @@ export const magicLogin = new MagicLoginStrategy({
   // and the user data as the second argument!
   verify: (payload, callback) => {
     // Get or create a user with the provided email from the database
-    console.log(payload);
-    const pl = payload;
-    findOrCreateUserByEmail(pl.destination)
+    findOrCreateUserByEmail(payload.destination)
       .then((user) => {
         callback(null, user);
       })
@@ -52,31 +49,3 @@ export const magicLogin = new MagicLoginStrategy({
 
 // Add the passport-magic-login strategy to Passport
 passport.use(magicLogin);
-
-// const MagicLinkStrategy = magicLink.Strategy;
-
-// function send(user, token) {
-//   const link = 'http://localhost:3000/login/email/verify?token=' + token;
-//   const msgOptions = {
-//     to: user.email,
-//     from: config.fromEmail,
-//     subject: 'Sign in',
-//     htmlBody: '<h3>Hello!</h3><p>Click the link below to finish signing in to Todos.</p><p><a href="' + link + '">Sign in</a></p>',
-//   }
-//   sendEmail(msgOptions)
-// }
-
-// function verify(user) {
-//   return new Promise(function(resolve, reject) {
-//     findOrCreateUserByEmail(user.email)
-//   });
-// }
-
-// export const magicLogin = () => {
-//   passport.use(new MagicLinkStrategy({
-//     secret: 'secretidpasswordnonsense',
-//     userFields: ['email'],
-//     tokenField: 'token',
-//     verifyUserAfterToken: true
-//   }, send(user, token), verify(user)))
-// };
