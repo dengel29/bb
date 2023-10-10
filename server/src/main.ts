@@ -1,15 +1,14 @@
 import express, { Request } from "express";
 import path from "path";
-import http from "http";
+import http, { ServerResponse } from "http";
 import cors from "cors";
 import { Server, ServerOptions } from "socket.io";
-import Context from "./middleware/context";
 import { fileURLToPath } from "url";
 import { createBoard, bulkCreateObjectives } from "./room-actions";
 import { magicLogin } from "./magic-login";
 import passport from "passport";
-import { PrismaClient } from "@prisma/client";
-import session, { Store } from "express-session";
+import { PrismaClient, User } from "@prisma/client";
+import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { config } from "../config";
 
@@ -25,7 +24,26 @@ const buildPath =
     : path.normalize(path.join(__dirname, "../build"));
 const publicPath = path.normalize(path.join(__dirname, "../../public"));
 const app = express();
-app.use(cors());
+const allowedOrigins = ["http://localhost:5173"];
+
+const headers = (req: Request, res: ServerResponse, next: () => void) => {
+  const origin: string = req.headers.origin!;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  }
+  next();
+};
+
+app.use(headers);
+app.use(
+  cors({
+    credentials: true,
+    origin: allowedOrigins,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  })
+);
 app.use(express.json());
 
 // socket.io stuff
@@ -43,18 +61,18 @@ const serverOptions: IOServerOptions = {
   },
 };
 
+const prisma = new PrismaClient();
 const io = new Server(httpServer, serverOptions);
-// app.use((req: Request, res: any, next: any) => {
-//   Context.bind(req);
-//   next();
-// });
 
 app.use(
   session({
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      httpOnly: true,
+      sameSite: true,
     },
     secret: config.dev.sessionSecret,
+    name: "bingoToken",
     resave: false,
     saveUninitialized: true,
     store: new pgSession({
@@ -64,28 +82,47 @@ app.use(
   })
 );
 
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser(async function (user: User, done) {
+  const foundUser = await prisma.user.findFirst({ where: { id: user.id } });
+  if (foundUser) {
+    done(null, foundUser);
+  } else {
+    done(new Error("No user found"), null);
+  }
+});
+
 app.get("/api/v1/hello", (_req, res) => {
   return res.json({ message: "Hello, world!" });
 });
 
 app.post("/api/create-room", async (req, res) => {
-  console.log("request:", req.body);
   const createdBoard = await createBoard(req.body);
   res.status(200).json(createdBoard);
 });
 
 app.post("/api/create-objectives", async (req, res) => {
-  console.log("request:", req.body);
   const createdObjectives = await bulkCreateObjectives(req.body);
   res.status(200).json(createdObjectives);
 });
 
-// TODO: finish SES approval to send emails
+// magicLogin.send maps to the sendEmail option
 app.post("/auth/magiclogin", magicLogin.send);
 
-app.get("/auth/magiclogin/callback", (_req, res) => {
-  return res.json({ message: "You're in!" });
-});
+// passport.authenticate("magicLogin") maps to verify in the options of magic-login
+app.get(
+  "/auth/magiclogin/callback",
+  passport.authenticate("magiclogin", {
+    successRedirect: "http://localhost:5173/login-success",
+    failureRedirect: "http://localhost:5173/",
+  })
+);
 
 app.use(express.static(buildPath));
 
@@ -101,19 +138,27 @@ app.get("/", (_req, res) => {
 });
 
 // The standard passport callback setup
-app.get("/auth/magiclogin/callback", passport.authenticate("magiclogin"));
-passport.serializeUser(function (user, done) {
-  done(null, user);
+// app.get("/auth/magiclogin/callback", passport.authenticate("magiclogin"));
+
+app.get("/user/me", (req, res, next) => {
+  // access to req.isAuthenticated(): boolean
+  // access to req.user: {email: string, id: number ...}
+  if (req.user) {
+    res.status(200).json({ email: req.user.email, id: req.user.id });
+  } else {
+    return res.status(401).send();
+  }
 });
 
-passport.deserializeUser(async function (id: number, done) {
-  const p = new PrismaClient();
-  const user = await p.user.findFirst({ where: { id: id } });
-  done(new Error("whatever"), user);
-  //User.findById(id, function (err, user) {
-  //done(err, user);
-  // });
+app.post("/log-out", (req, res, next) => {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/");
+  });
 });
+
 io.on("connection", (socket) => {
   // initial message to connector
   io.to(socket.id).emit("new_message", {
