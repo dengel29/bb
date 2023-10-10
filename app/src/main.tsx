@@ -6,6 +6,7 @@ import { CreateObjectivesForm } from "./CreateObjectivesForm.tsx";
 import { SignInPage } from "./SignInPage.tsx";
 import { HomePage } from "./Home.tsx";
 import { CreateGamePage } from "./CreateGamePage";
+import { LoggedInPage } from "./LoggedIn.tsx";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
   {
     path: "/sign-in",
     element: <SignInPage />,
+  },
+  {
+    path: "/login-success",
+    element: <LoggedInPage />,
   },
 ]);
 
