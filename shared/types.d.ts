@@ -34,6 +34,14 @@ export type CreateObjectiveDTO = Prisma.ObjectiveGetPayload<
   typeof ObjectiveDTO
 >;
 
+declare global {
+  namespace Express {
+    interface User {
+      email: string;
+      id: number;
+    }
+  }
+}
 // old: this was my original model for the board DTO, without using Prisma's API
 // prefer the Prisma method above as it seems more well-equipped to handle changing models
 // export interface CreateBoardDTO {
