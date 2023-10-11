@@ -164,7 +164,13 @@ app.post("/log-out", (req, res, next) => {
     if (err) {
       return next(err);
     }
-    res.redirect("/");
+    res.clearCookie("bingoToken", {
+      domain: "localhost",
+      path: "/",
+      sameSite: true,
+      httpOnly: true,
+    });
+    res.redirect("http://localhost:5173/home");
   });
 });
 
