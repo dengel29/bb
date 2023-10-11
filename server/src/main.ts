@@ -103,8 +103,17 @@ app.get("/api/v1/hello", (_req, res) => {
 });
 
 app.post("/api/create-room", async (req, res) => {
+  // TODO: user req.user instead of using useCurrentUser hook on client
+  try {
+    if (!req.isAuthenticated) {
+      return res.status(401).send("Unauthorized, please sign in and try again");
+    }
   const createdBoard = await createBoard(req.body);
-  res.status(200).json(createdBoard);
+    return res.status(200).json(createdBoard).send();
+  } catch (err) {
+    return res.status(500).send(err?.message);
+  }
+});
 });
 
 app.post("/api/create-objectives", async (req, res) => {
