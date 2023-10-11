@@ -4,7 +4,11 @@ import http, { ServerResponse } from "http";
 import cors from "cors";
 import { Server, ServerOptions } from "socket.io";
 import { fileURLToPath } from "url";
-import { createBoard, bulkCreateObjectives } from "./room-actions";
+import {
+  createBoard,
+  bulkCreateObjectives,
+  getRecentBoards,
+} from "./room-actions";
 import { magicLogin } from "./magic-login";
 import passport from "passport";
 import { PrismaClient, User } from "@prisma/client";
@@ -108,12 +112,21 @@ app.post("/api/create-room", async (req, res) => {
     if (!req.isAuthenticated) {
       return res.status(401).send("Unauthorized, please sign in and try again");
     }
-  const createdBoard = await createBoard(req.body);
+    const createdBoard = await createBoard(req.body);
     return res.status(200).json(createdBoard).send();
   } catch (err) {
     return res.status(500).send(err?.message);
   }
 });
+
+app.get("/api/get-rooms", async (req, res, next) => {
+  console.log(req?.user);
+  try {
+    const boards = await getRecentBoards();
+    return res.status(200).json(boards);
+  } catch (err) {
+    return res.status(500).send(err?.message);
+  }
 });
 
 app.post("/api/create-objectives", async (req, res) => {

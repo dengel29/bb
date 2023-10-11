@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Board, Prisma, PrismaClient } from "@prisma/client";
 import { CreateBoardDTO, CreateObjectiveDTO } from "shared/types";
 
 const prisma = new PrismaClient();
@@ -16,6 +16,19 @@ export async function createBoard(args: CreateBoardDTO) {
       password,
       gameType,
       createdById,
+    },
+  });
+
+  return result;
+}
+
+export async function getRecentBoards() {
+  // find boards "greater than or equal to yesterday"
+  const result = await prisma.board.findMany({
+    where: {
+      createdAt: {
+        gte: new Date(Date.now() - 8.64e7),
+      },
     },
   });
 
