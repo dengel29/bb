@@ -8,6 +8,8 @@ import {
   createBoard,
   bulkCreateObjectives,
   getRecentBoards,
+  findBoardAndJoin,
+  addUserToBoard,
 } from "./room-actions";
 import { magicLogin } from "./magic-login";
 import passport from "passport";
@@ -159,8 +161,38 @@ app.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// The standard passport callback setup
-// app.get("/auth/magiclogin/callback", passport.authenticate("magiclogin"));
+app.post("/api/rooms/join", async (req, res) => {
+  // get the information over the wire:
+  // - id of board to be joined
+  // - password for board
+  // - route should be authenticated so user is already in request
+  try {
+    if (!req.isAuthenticated || !req.user) {
+      return res.status(401).send("Unauthorized, please sign in and try again");
+    }
+    const { body, user } = req;
+    const { password, boardId } = body;
+    const { passwordMatch, joiningBoardId, joiningUserId } =
+      await findBoardAndJoin({
+        boardId,
+        password,
+        userId: user.id,
+      });
+    if (!passwordMatch) {
+      return res.status(401).send("Password doesn't match");
+    }
+    const boardPlayerWithBoard = await addUserToBoard({
+      boardId: joiningBoardId,
+      userId: joiningUserId,
+    });
+    // tried to do a server side redirect but kept getting access-control-allow-origin related errors
+    // res.setHeader("Access-Control-Allow-Origin", "localhost");
+    // res..status(302).location(`http://localhost:5173/play/${boardPlayerWithBoard.board.id}`);
+    return res.status(200).json(boardPlayerWithBoard).send();
+  } catch (err) {
+    return res.status(500).send(err?.message);
+  }
+});
 
 app.get("/user/me", (req, res, next) => {
   // access to req.isAuthenticated(): boolean

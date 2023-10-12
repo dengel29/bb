@@ -34,6 +34,51 @@ export type CreateObjectiveDTO = Prisma.ObjectiveGetPayload<
   typeof ObjectiveDTO
 >;
 
+const GetBoard = Prisma.validator<Prisma.BoardDefaultArgs>()({
+  select: {
+    name: true,
+    id: true,
+    gameType: true,
+    createdBy: {
+      select: {
+        id: true,
+        email: true,
+        username: true,
+      },
+    },
+  },
+});
+
+export type GetBoardDTO = Prisma.BoardGetPayload<typeof GetBoard>;
+
+const BoardPlayerCreated = Prisma.validator<Prisma.BoardPlayerDefaultArgs>()({
+  select: {
+    user: {
+      select: {
+        id: true,
+      },
+    },
+    board: {
+      select: {
+        id: true,
+        name: true,
+        createdBy: {
+          select: {
+            username: true,
+            id: true,
+          },
+        },
+      },
+    },
+  },
+});
+
+export type BoardPlayerCreatedDTO = Prisma.BoardPlayerGetPayload<
+  typeof BoardPlayerCreated
+>;
+
+export type JoinBoardDTO = { password: string; boardId: string };
+
 declare global {
   namespace Express {
     interface User {
