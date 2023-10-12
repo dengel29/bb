@@ -7,6 +7,7 @@ import { SignInPage } from "./SignInPage.tsx";
 import { HomePage } from "./Home.tsx";
 import { CreateGamePage } from "./CreateGamePage";
 import { LoggedInPage } from "./LoggedIn.tsx";
+import { BoardPage } from "./BoardPage.tsx";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
   {
     path: "/play",
     element: <CreateGamePage />,
+  },
+  {
+    path: "/play/:boardId",
+    element: <BoardPage />,
   },
   {
     path: "/sign-in",
