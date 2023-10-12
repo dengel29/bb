@@ -30,6 +30,18 @@ export async function getRecentBoards() {
         gte: new Date(Date.now() - 8.64e7),
       },
     },
+    select: {
+      name: true,
+      id: true,
+      gameType: true,
+      createdBy: {
+        select: {
+          id: true,
+          email: true,
+          username: true,
+        },
+      },
+    },
   });
 
   return result;
