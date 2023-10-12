@@ -1,5 +1,5 @@
 import { Container } from "@radix-ui/themes";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Score } from "shared/types";
 import { Board } from "./Board";
 import { socket } from "./socket";
@@ -9,6 +9,7 @@ const id = Math.floor(
 );
 
 export const BoardPage = () => {
+  const [isConnected, setIsConnected] = useState<boolean>(socket.connected);
   const initialScore: Score = new Map([
     ["mine", new Set()],
     ["theirs", new Set()],
@@ -66,6 +67,24 @@ export const BoardPage = () => {
     setScore(newScore);
     setMessages(newMessages);
   });
+
+  useEffect(() => {
+    function onConnect(): void {
+      setIsConnected(true);
+    }
+
+    function onDisconnect(): void {
+      setIsConnected(false);
+    }
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
+  }, []);
 
   return (
     <Container size="2">
