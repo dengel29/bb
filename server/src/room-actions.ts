@@ -1,5 +1,9 @@
 import { Board, Prisma, PrismaClient } from "@prisma/client";
-import { CreateBoardDTO, CreateObjectiveDTO } from "shared/types";
+import {
+  BoardPlayerCreatedDTO,
+  CreateBoardDTO,
+  CreateObjectiveDTO,
+} from "shared/types";
 
 const prisma = new PrismaClient();
 
@@ -30,6 +34,18 @@ export async function getRecentBoards() {
         gte: new Date(Date.now() - 8.64e7),
       },
     },
+    select: {
+      name: true,
+      id: true,
+      gameType: true,
+      createdBy: {
+        select: {
+          id: true,
+          email: true,
+          username: true,
+        },
+      },
+    },
   });
 
   return result;
@@ -45,4 +61,77 @@ export async function bulkCreateObjectives(
   } catch (error) {
     console.log(error);
   }
+}
+
+export async function findBoardAndJoin({
+  boardId,
+  password,
+  userId,
+}: {
+  boardId: string;
+  password: string;
+  userId: number;
+}): Promise<{
+  passwordMatch: boolean;
+  joiningUserId: number;
+  joiningBoardId: string;
+}> {
+  console.log({ boardId, password, userId });
+  const board = await prisma.board.findFirst({
+    where: { id: boardId },
+    select: { password: true, id: true },
+  });
+
+  if (board?.password !== password) {
+    // respond with passwordMatch false
+    return {
+      passwordMatch: false,
+      joiningUserId: userId,
+      joiningBoardId: boardId,
+    };
+  }
+  // if the password does match:
+  // - add the user as a board player
+  // - return the board with all board players
+  return {
+    passwordMatch: true,
+    joiningUserId: userId,
+    joiningBoardId: boardId,
+  };
+}
+
+export async function addUserToBoard({
+  boardId,
+  userId,
+}: {
+  boardId: string;
+  userId: number;
+}): Promise<BoardPlayerCreatedDTO> {
+  const boardPlayer = await prisma.boardPlayer.create({
+    data: {
+      userId,
+      boardId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+        },
+      },
+      board: {
+        select: {
+          id: true,
+          name: true,
+          createdBy: {
+            select: {
+              username: true,
+              id: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return boardPlayer;
 }
