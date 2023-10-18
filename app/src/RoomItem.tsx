@@ -47,10 +47,8 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
             "Content-Type": "application/json",
           },
         });
-        console.log(response);
         if (response.ok) {
-          const { board, user }: BoardPlayerCreatedDTO = await response.json();
-          console.log("board extracrted from response:", board);
+          const { board }: BoardPlayerCreatedDTO = await response.json();
           setRequestStatus({ error: false, reason: "" });
           navigator(`/play/${board.id}`);
         } else {
