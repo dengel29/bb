@@ -10,6 +10,7 @@ import {
   getRecentBoards,
   findBoardAndJoin,
   addUserToBoard,
+  getBoardPlayers,
 } from "./room-actions";
 import { magicLogin } from "./magic-login";
 import passport from "passport";
@@ -17,6 +18,7 @@ import { PrismaClient, User } from "@prisma/client";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { config } from "../config";
+import { GetBoardPlayerDTO } from "shared/types";
 
 const pgSession = connectPgSimple(session);
 
@@ -194,6 +196,17 @@ app.post("/api/rooms/join", async (req, res) => {
   }
 });
 
+app.get("/api/rooms/players", async (req, res, next) => {
+  try {
+    if (!req.isAuthenticated || !req.user) {
+      return res.status(401).send("Unauthorized, please sign in and try again");
+    }
+    const boardId = req.query.board as string;
+    const boardPlayers = await getBoardPlayers({ boardId });
+    return res.status(201).json(boardPlayers);
+  } catch (err) {}
+});
+
 app.get("/user/me", (req, res, next) => {
   // access to req.isAuthenticated(): boolean
   // access to req.user: {email: string, id: number ...}
@@ -232,8 +245,49 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("colorCell", payload);
   });
 
-  socket.on("roomCreated", (payload) => {
-    // creates a room on the db with a name, password, seed, timeLimit
+  socket.on("room-exited", (payload) => {
+    console.log("room exited on server");
+    socket
+      .to(`board-${payload.boardId}`)
+      .emit("playerLeft", { exitedPlayer: payload.player });
+  });
+
+  socket.on("room-joined", async (payload) => {
+    // TODO: if we need more security in rooms, can check to see if user is a BoardPlayer on this for "authentication"
+
+    await prisma.boardPlayer.update({
+      where: {
+        boardPlayerId: {
+          userId: payload.player.user.id,
+          boardId: payload.boardId,
+        },
+      },
+      data: {
+        socketId: socket.id,
+      },
+    });
+
+    const newPlayer: GetBoardPlayerDTO = {
+      socketId: socket.id,
+      user: {
+        id: payload.player.user.id,
+        email: payload.player.user.email,
+        username: null,
+      },
+      board: {
+        id: payload.boardId,
+      },
+    };
+    socket.join(`board-${payload.boardId}`);
+    socket.to(`board-${payload.boardId}`).emit("playerJoined", {
+      newPlayer,
+      socketId: socket.id,
+    });
+  });
+
+  socket.on("disconnecting", () => {
+    const [socketId, boardId] = socket.rooms;
+    socket.to(boardId).emit("playerLeft", { socketId });
   });
 });
 

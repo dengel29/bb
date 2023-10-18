@@ -17,7 +17,6 @@ export const RoomList = (): JSX.Element => {
   useEffect(() => {
     getRecentRooms().then((response: Response) => {
       response.json().then((rooms) => {
-        console.log(rooms);
         setRooms(rooms);
       });
     });
@@ -25,7 +24,11 @@ export const RoomList = (): JSX.Element => {
   return (
     <div className="games-list__container">
       <h2>All Games</h2>
-
+      {rooms?.length === 0 && (
+        <div>
+          <p>No games on today, create one and invite your friends</p>
+        </div>
+      )}
       {rooms &&
         rooms.map((room) => {
           return <RoomItem room={room} key={room.id} />;
