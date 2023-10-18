@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-
+import { objectives } from "./objectives";
 const prisma = new PrismaClient();
 
 async function createEntities() {
@@ -11,7 +11,7 @@ async function createEntities() {
     data: { name: "Taipei", countryId: country.id },
   });
 
-  await prisma.user.create({
+  const creator = await prisma.user.create({
     data: {
       username: "dengel",
       email: "dan@dengel.io",
@@ -20,6 +20,15 @@ async function createEntities() {
       cityId: city.id,
       countryId: country.id,
     },
+  });
+
+  const unsavedObjectives = objectives.map((o) => {
+    o.creatorId = creator.id;
+    return o;
+  });
+
+  await prisma.objective.createMany({
+    data: unsavedObjectives,
   });
 }
 
