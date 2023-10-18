@@ -1,17 +1,21 @@
-import { Text } from '@radix-ui/themes';
+import { PlayerMap } from "shared/types";
 
-export function ConnectionState({ isConnected, id, messages }): JSX.Element {
+export function ConnectionState({
+  isConnected,
+  players,
+}: {
+  isConnected: boolean;
+  players: PlayerMap;
+}): JSX.Element {
   return (
     <>
-      <p>
-        {id} Connected?: {'' + isConnected}
-      </p>
-      <Text>Activity</Text>
-      <ul>
-        {messages.map((m, i) => {
-          return <li key={i}>{m.message}</li>;
+      {isConnected && <p>🟢</p>}
+      {!isConnected && <p>🔴</p>}
+      <p>Players in this rooom</p>
+      {players &&
+        Array.from(players).map(([_key, value]) => {
+          return value?.user && <p key={value.user.id}>{value.user.email}</p>;
         })}
-      </ul>
     </>
   );
 }

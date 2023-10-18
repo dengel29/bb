@@ -1,20 +1,20 @@
 import { Container } from "@radix-ui/themes";
 import { useState, useEffect } from "react";
-import { Score } from "shared/types";
+import { GetBoardPlayerDTO, PlayerMap, Score } from "shared/types";
 import { Board } from "./Board";
+import { ConnectionState } from "./ConnectionState";
 import { socket } from "./socket";
-
-const id = Math.floor(
-  Math.random() * 10 + Math.random() * 10 * Math.random() * 10
-);
+import { useCurrentUser } from "./hooks/useCurrentUser";
 
 export const BoardPage = () => {
+  const { currentUser, loading, error } = useCurrentUser();
   const [isConnected, setIsConnected] = useState<boolean>(socket.connected);
   const initialScore: Score = new Map([
     ["mine", new Set()],
     ["theirs", new Set()],
   ]);
   const [score, setScore] = useState(initialScore);
+  const [players, setPlayers] = useState<PlayerMap>(new Map());
 
   const [messages, setMessages] = useState<
     { message: string; cellId: number }[]
@@ -40,8 +40,36 @@ export const BoardPage = () => {
       ["mine", score.get("mine")],
     ]) as Score;
     setScore(newScore);
-    socket.emit("cellClicked", { cellId, eventType, userId: id });
+    socket.emit("cellClicked", { cellId, eventType, userId: currentUser?.id });
   };
+
+  const getPlayers = async (): Promise<GetBoardPlayerDTO[]> => {
+    const boardId = window.location.pathname.split("/")[2];
+    const response = await fetch(
+      `http://localhost:3000/api/rooms/players?board=${boardId}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return await response.json();
+  };
+
+  socket.on("playerJoined", (payload): void => {
+    const { newPlayer, socketId } = payload;
+    const newPlayersMap = new Map(players).set(socketId, newPlayer);
+    setPlayers(newPlayersMap);
+  });
+
+  socket.on("playerLeft", (payload) => {
+    const { socketId } = payload;
+    const updatedPlayers = new Map(players);
+    updatedPlayers.delete(socketId);
+    setPlayers(updatedPlayers);
+  });
 
   socket.on("colorCell", (payload) => {
     const newMessages = [...messages];
@@ -49,7 +77,6 @@ export const BoardPage = () => {
       message: `Player with id ${payload.userId} just ${payload.eventType}ed ${payload.cellId}`,
       cellId: payload.cellId,
     });
-    console.log(payload);
 
     const theirPoints = new Set(score.get("theirs"));
 
@@ -80,15 +107,38 @@ export const BoardPage = () => {
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
 
+    getPlayers().then((players: GetBoardPlayerDTO[]) => {
+      const playerMap = players.reduce((accumulator, player) => {
+        return accumulator.set(player.socketId, player);
+      }, new Map());
+
+      setPlayers(playerMap);
+    });
+
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };
   }, []);
 
+  useEffect(() => {
+    if (currentUser && !loading && !error)
+      socket.emit("room-joined", {
+        boardId: window.location.pathname.split("/")[2],
+        userId: currentUser.id,
+        player: { user: { email: currentUser?.email, id: currentUser?.id } },
+      });
+  }, [loading, currentUser, error]);
+
   return (
     <Container size="2">
-      <Board broadcastClick={broadcastClick} score={score}></Board>
+      {currentUser && <p>Me: {currentUser.email}</p>}
+      {players && (
+        <ConnectionState players={players} isConnected={isConnected} />
+      )}
+      {currentUser && (
+        <Board broadcastClick={broadcastClick} score={score}></Board>
+      )}
     </Container>
   );
 };
