@@ -2,6 +2,8 @@ import { Prisma } from "@prisma/client";
 
 export type Score = Map<"mine" | "theirs", Set<number>>;
 
+export type PlayerMap = Map<string, GetBoardPlayerDTO>;
+
 export type BroadcastClickArgs = {
   cellId: number;
   eventType: "unclaim" | "claim";
@@ -78,6 +80,24 @@ export type BoardPlayerCreatedDTO = Prisma.BoardPlayerGetPayload<
 >;
 
 export type JoinBoardDTO = { password: string; boardId: string };
+
+const GetBoardPlayer = Prisma.validator<Prisma.BoardPlayerDefaultArgs>()({
+  select: {
+    user: {
+      select: {
+        id: true,
+        email: true,
+        username: true,
+      },
+    },
+    board: { select: { id: true } },
+    socketId: true,
+  },
+});
+
+export type GetBoardPlayerDTO = Prisma.BoardPlayerGetPayload<
+  typeof GetBoardPlayer
+>;
 
 declare global {
   namespace Express {

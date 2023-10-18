@@ -1,8 +1,9 @@
-import { Board, Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import {
   BoardPlayerCreatedDTO,
   CreateBoardDTO,
   CreateObjectiveDTO,
+  GetBoardPlayerDTO,
 } from "shared/types";
 
 const prisma = new PrismaClient();
@@ -76,7 +77,6 @@ export async function findBoardAndJoin({
   joiningUserId: number;
   joiningBoardId: string;
 }> {
-  console.log({ boardId, password, userId });
   const board = await prisma.board.findFirst({
     where: { id: boardId },
     select: { password: true, id: true },
@@ -134,4 +134,33 @@ export async function addUserToBoard({
   });
 
   return boardPlayer;
+}
+
+export async function getBoardPlayers({
+  boardId,
+}: {
+  boardId: string;
+}): Promise<GetBoardPlayerDTO[]> {
+  const boardPlayers: GetBoardPlayerDTO[] = await prisma.boardPlayer.findMany({
+    where: {
+      boardId,
+    },
+    select: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          username: true,
+        },
+      },
+      board: {
+        select: { id: true },
+      },
+      socketId: true,
+    },
+    // include: {
+    // },
+  });
+
+  return boardPlayers;
 }
