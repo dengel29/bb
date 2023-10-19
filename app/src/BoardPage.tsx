@@ -5,6 +5,8 @@ import { Board } from "./Board";
 import { ConnectionState } from "./ConnectionState";
 import { socket } from "./socket";
 import { useCurrentUser } from "./hooks/useCurrentUser";
+import { StartButton } from "./StartButton";
+import { CirclePicker } from "react-color";
 
 export const BoardPage = () => {
   const { currentUser, loading, error } = useCurrentUser();
@@ -13,6 +15,7 @@ export const BoardPage = () => {
     ["mine", new Set()],
     ["theirs", new Set()],
   ]);
+  const [selectedColor, setSelectedColor] = useState<any>(null);
   const [score, setScore] = useState(initialScore);
   const [players, setPlayers] = useState<PlayerMap>(new Map());
 
@@ -20,6 +23,17 @@ export const BoardPage = () => {
     { message: string; cellId: number }[]
   >([]);
 
+  const handleReady = () => {
+    // when a player clicks the ready button
+    // only active if the game hasnt started yet
+    //  add a "started" or "status" field to db (default="pending")
+    // enum = ["pending", "running", "complete", "cancelled"]
+    // add color field to boardPlayer (nullable)
+    // player needs to pick a color before they can be "ready"
+    // only handles sending the event to others in the room
+    // payload for event should be {userId, socketId(relayed from server), color}
+    socket.emit("ready", { userId: currentUser?.id, color: selectedColor });
+  };
   const broadcastClick = ({
     cellId,
     eventType,
@@ -136,6 +150,31 @@ export const BoardPage = () => {
       {players && (
         <ConnectionState players={players} isConnected={isConnected} />
       )}
+      <CirclePicker
+        onChange={(e) => {
+          // TODO: convert this to HSL elsewhere so we can fux with opacity
+          setSelectedColor(e.hex);
+        }}
+        colors={[
+          "#7d1a1a",
+          "#a61e4d",
+          "#702682",
+          "#3b5bdb",
+          "#1864ab",
+          "#074652",
+          "#133d1b",
+          "#5c940d",
+          "#99330b",
+          "#4e2b15",
+          "#252521",
+          "#84a513",
+        ]}
+      />
+      <StartButton
+        players={players}
+        // clickHandler={handleReady}
+        color={selectedColor}
+      />
       {currentUser && (
         <Board broadcastClick={broadcastClick} score={score}></Board>
       )}
