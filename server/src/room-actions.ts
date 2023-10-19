@@ -4,6 +4,7 @@ import {
   CreateBoardDTO,
   CreateObjectiveDTO,
   GetBoardPlayerDTO,
+  MyGamesDTO,
 } from "shared/types";
 
 const prisma = new PrismaClient();
@@ -163,4 +164,41 @@ export async function getBoardPlayers({
   });
 
   return boardPlayers;
+}
+
+export async function getMyGames({
+  userId,
+}: {
+  userId: number;
+}): Promise<MyGamesDTO[]> {
+  const myGames: MyGamesDTO[] = await prisma.board.findMany({
+    where: {
+      boardPlayers: {
+        some: {
+          userId,
+        },
+      },
+    },
+    select: {
+      createdBy: {
+        select: {
+          email: true,
+          username: true,
+        },
+      },
+      updatedAt: true,
+      name: true,
+      id: true,
+      boardPlayers: {
+        select: {
+          user: {
+            select: {
+              email: true,
+            },
+          },
+        },
+      },
+    },
+  });
+  return myGames;
 }

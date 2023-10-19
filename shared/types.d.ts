@@ -99,6 +99,31 @@ export type GetBoardPlayerDTO = Prisma.BoardPlayerGetPayload<
   typeof GetBoardPlayer
 >;
 
+const MyGames = Prisma.validator<Prisma.BoardDefaultArgs>()({
+  select: {
+    createdBy: {
+      select: {
+        email: true,
+        username: true,
+      },
+    },
+    updatedAt: true,
+    name: true,
+    id: true,
+    boardPlayers: {
+      select: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
+      },
+    },
+  },
+});
+
+export type MyGamesDTO = Prisma.BoardGetPayload<typeof MyGames>;
+
 declare global {
   namespace Express {
     interface User {

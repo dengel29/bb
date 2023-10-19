@@ -40,7 +40,7 @@ export const BoardPage = () => {
       ["mine", score.get("mine")],
     ]) as Score;
     setScore(newScore);
-    socket.emit("cellClicked", { cellId, eventType, userId: currentUser?.id });
+    socket.emit("cell:clicked", { cellId, eventType, userId: currentUser?.id });
   };
 
   const getPlayers = async (): Promise<GetBoardPlayerDTO[]> => {
@@ -58,20 +58,20 @@ export const BoardPage = () => {
     return await response.json();
   };
 
-  socket.on("playerJoined", (payload): void => {
+  socket.on("player:joined", (payload): void => {
     const { newPlayer, socketId } = payload;
     const newPlayersMap = new Map(players).set(socketId, newPlayer);
     setPlayers(newPlayersMap);
   });
 
-  socket.on("playerLeft", (payload) => {
+  socket.on("player:left", (payload) => {
     const { socketId } = payload;
     const updatedPlayers = new Map(players);
     updatedPlayers.delete(socketId);
     setPlayers(updatedPlayers);
   });
 
-  socket.on("colorCell", (payload) => {
+  socket.on("cell:toggled", (payload) => {
     const newMessages = [...messages];
     newMessages.push({
       message: `Player with id ${payload.userId} just ${payload.eventType}ed ${payload.cellId}`,
@@ -123,7 +123,7 @@ export const BoardPage = () => {
 
   useEffect(() => {
     if (currentUser && !loading && !error)
-      socket.emit("room-joined", {
+      socket.emit("room:joined", {
         boardId: window.location.pathname.split("/")[2],
         userId: currentUser.id,
         player: { user: { email: currentUser?.email, id: currentUser?.id } },
