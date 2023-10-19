@@ -253,21 +253,23 @@ io.on("connection", (socket) => {
   });
   console.log("a user connected, id: ", socket.id);
 
-  socket.on("cellClicked", (payload) => {
+  socket.on("cell:clicked", (payload) => {
     console.log("broadcasting colorCell message");
-    socket.broadcast.emit("colorCell", payload);
+    socket.broadcast.emit("cell:toggled", payload);
   });
 
-  socket.on("room-exited", (payload) => {
-    console.log("room exited on server");
-    socket
-      .to(`board-${payload.boardId}`)
-      .emit("playerLeft", { exitedPlayer: payload.player });
-  });
+  // player:left will be emitted from disconnecting, so
+  // socket.on("room:exited", (payload) => {
+  //   console.log("room exited on server");
+  //   socket
+  //     .to(`board-${payload.boardId}`)
+  //     .emit("playerLeft", { exitedPlayer: payload.player });
+  // });
 
-  socket.on("room-joined", async (payload) => {
+  socket.on("room:joined", async (payload) => {
     // TODO: if we need more security in rooms, can check to see if user is a BoardPlayer on this for "authentication"
 
+    console.log(payload);
     await prisma.boardPlayer.update({
       where: {
         boardPlayerId: {
@@ -292,7 +294,7 @@ io.on("connection", (socket) => {
       },
     };
     socket.join(`board-${payload.boardId}`);
-    socket.to(`board-${payload.boardId}`).emit("playerJoined", {
+    socket.to(`board-${payload.boardId}`).emit("player:joined", {
       newPlayer,
       socketId: socket.id,
     });
@@ -300,7 +302,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnecting", () => {
     const [socketId, boardId] = socket.rooms;
-    socket.to(boardId).emit("playerLeft", { socketId });
+    socket.to(boardId).emit("player:left", { socketId });
   });
 });
 
