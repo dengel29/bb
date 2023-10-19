@@ -11,6 +11,7 @@ export const useHeader = () => {
     "/create-board",
     "/sign-in",
     "/play",
+    "/profile",
   ];
 
   const header: JSX.Element | null = withHeaderLocations.some(

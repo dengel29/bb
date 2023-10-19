@@ -24,7 +24,7 @@ export const HeaderNav = (): JSX.Element => {
       <Link to="/">Home</Link>
       <Link to="/create-objectives">Create objectives</Link>
       <Link to="/play">Join a game</Link>
-      <button>About</button>
+      <Link to="/profile">Profile</Link>
       {authLink}
     </div>
   );

@@ -8,6 +8,7 @@ import { HomePage } from "./Home.tsx";
 import { CreateGamePage } from "./CreateGamePage";
 import { LoggedInPage } from "./LoggedIn.tsx";
 import { BoardPage } from "./BoardPage.tsx";
+import { ProfilePage } from "./ProfilePage.tsx";
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
   {
     path: "/sign-in",
     element: <SignInPage />,
+  },
+  {
+    path: "/profile",
+    element: <ProfilePage />,
   },
   {
     path: "/login-success",
