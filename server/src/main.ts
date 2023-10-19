@@ -11,6 +11,7 @@ import {
   findBoardAndJoin,
   addUserToBoard,
   getBoardPlayers,
+  getMyGames,
 } from "./room-actions";
 import { magicLogin } from "./magic-login";
 import passport from "passport";
@@ -215,6 +216,18 @@ app.get("/user/me", (req, res, next) => {
   } else {
     return res.status(401).send();
   }
+});
+
+app.get("/api/games", async (req, res, next) => {
+  try {
+    console.log("api/games", req.query);
+    if (!req.isAuthenticated || !req.user) {
+      return res.status(401).send("Unauthorized, please sign in and try again");
+    }
+    const userId = Number(req.query.userId);
+    const myGames = await getMyGames({ userId });
+    return res.status(201).json(myGames);
+  } catch (err) {}
 });
 
 app.post("/log-out", (req, res, next) => {
