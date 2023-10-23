@@ -322,8 +322,11 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on("disconnecting", () => {
+  socket.on("disconnecting", async () => {
     const [socketId, boardId] = socket.rooms;
+    // nullify their socket id
+    // const player = await updatePlayerSocketId({ boardId, socketId });
+    // console.log("disconnecting player, after disconnect: ", player);
     socket.to(boardId).emit("player:left", { socketId });
   });
 });

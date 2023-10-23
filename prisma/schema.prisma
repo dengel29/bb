@@ -34,6 +34,7 @@ model BoardPlayer {
   user            User             @relation(fields: [userId], references: [id])
 
   @@id([userId, boardId], name: "boardPlayerId")
+  @@index([socketId])
   @@map("boardPlayers")
 }
 
