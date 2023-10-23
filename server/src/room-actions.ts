@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import {
+  BoardObjectivesDTO,
   BoardPlayerCreatedDTO,
   CreateBoardDTO,
   CreateObjectiveDTO,
@@ -158,6 +159,7 @@ export async function getBoardPlayers({
         select: { id: true },
       },
       socketId: true,
+      color: true,
     },
     // include: {
     // },
@@ -201,4 +203,148 @@ export async function getMyGames({
     },
   });
   return myGames;
+}
+
+export async function updatePlayerReady({
+  color,
+  userId,
+  boardId,
+}: {
+  color: string;
+  userId: number;
+  boardId: string;
+}) {
+  await prisma.boardPlayer.update({
+    where: {
+      boardPlayerId: {
+        userId,
+        boardId,
+      },
+    },
+    data: {
+      color,
+    },
+  });
+}
+export async function updatePlayerSocketId({
+  socketId,
+  userId,
+  boardId,
+}: {
+  socketId: string;
+  userId: number;
+  boardId: string;
+}): Promise<GetBoardPlayerDTO> {
+  // seems I can't simply use index if a composite id is also expected
+  // let where, data;
+  // if (socketId && !userId) {
+  //   where = {
+  //     socketId,
+  //   };
+  //   data = {
+  //     socketId: null,
+  //   };
+  // } else {
+  //   where = {
+  //     boardPlayerId: {
+  //       userId,
+  //       boardId,
+  //     },
+  //   };
+  //   data = {
+  //     socketId,
+  //   };
+  // }
+  return await prisma.boardPlayer.update({
+    where: {
+      boardPlayerId: {
+        userId,
+        boardId,
+      },
+    },
+    data: {
+      socketId,
+    },
+    select: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          username: true,
+        },
+      },
+      board: {
+        select: {
+          id: true,
+        },
+      },
+      socketId: true,
+      boardId: true,
+      color: true,
+    },
+  });
+}
+
+export async function getRandomObjectives({ boardId }: { boardId: string }) {
+  const objectiveIds = await prisma.$queryRaw<
+    { id: number }[]
+  >`SELECT id FROM objectives ORDER BY RANDOM() LIMIT 25`;
+
+  const boardObjectives: {
+    cellX: number;
+    cellY: number;
+    boardId: string;
+    objectiveId: number;
+  }[] = [];
+  let index = 0;
+  for (let x = 0; x < 5; x++) {
+    for (let y = 0; y < 5; y++) {
+      const bo = {
+        cellX: x,
+        cellY: y,
+        boardId,
+        objectiveId: objectiveIds[index].id,
+      };
+      boardObjectives.push(bo);
+      index++;
+    }
+  }
+  return boardObjectives;
+}
+
+export async function createBoardObjectives({
+  boardId,
+}: {
+  boardId: string;
+}): Promise<BoardObjectivesDTO[]> {
+  const objectiveInput = await getRandomObjectives({ boardId });
+  await prisma.boardObjective.createMany({
+    data: objectiveInput,
+  });
+
+  const boardObjectives = await getBoardObjectives({ boardId });
+
+  return boardObjectives;
+}
+
+export async function getBoardObjectives({
+  boardId,
+}: {
+  boardId: string;
+}): Promise<BoardObjectivesDTO[]> {
+  return await prisma.boardObjective.findMany({
+    where: {
+      boardId,
+    },
+    include: {
+      objective: {
+        select: {
+          displayName: true,
+          id: true,
+          countable: true,
+          countLimit: true,
+        },
+      },
+    },
+  });
 }

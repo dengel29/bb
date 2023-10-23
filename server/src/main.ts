@@ -12,6 +12,10 @@ import {
   addUserToBoard,
   getBoardPlayers,
   getMyGames,
+  updatePlayerReady,
+  updatePlayerSocketId,
+  createBoardObjectives,
+  getBoardObjectives,
 } from "./room-actions";
 import { magicLogin } from "./magic-login";
 import passport from "passport";
@@ -19,9 +23,12 @@ import { PrismaClient, User } from "@prisma/client";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { config } from "../config";
-import { GetBoardPlayerDTO } from "shared/types";
-
-const pgSession = connectPgSimple(session);
+import {
+  GetBoardPlayerDTO,
+  BoardObjectivesDTO,
+  SocketPayload,
+  SocketAction,
+} from "shared/types";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -73,6 +80,7 @@ const serverOptions: IOServerOptions = {
 const prisma = new PrismaClient();
 const io = new Server(httpServer, serverOptions);
 
+const pgSession = connectPgSimple(session);
 app.use(
   session({
     cookie: {
@@ -83,7 +91,7 @@ app.use(
     secret: config.dev.sessionSecret,
     name: "bingoToken",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     store: new pgSession({
       conString: config.dev.db,
       tableName: "sessions",
@@ -132,6 +140,12 @@ app.get("/api/get-rooms", async (req, res, next) => {
   } catch (err) {
     return res.status(500).send(err?.message);
   }
+});
+
+app.post("/api/board-objectives/create", async (req, res) => {
+  const boardObjectives = await createBoardObjectives({
+    boardId: req.body.boardId,
+  });
 });
 
 app.post("/api/create-objectives", async (req, res) => {
@@ -208,6 +222,19 @@ app.get("/api/rooms/players", async (req, res, next) => {
   } catch (err) {}
 });
 
+app.get("/api/rooms/objectives", async (req, res, next) => {
+  try {
+    if (!req.isAuthenticated || !req.user) {
+      return res.status(401).send("Unauthorized, please sign in and try again");
+    }
+    const boardId = req.query.board as string;
+    const objectives = await getBoardObjectives({ boardId });
+    return res.status(201).json(objectives);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 app.get("/user/me", (req, res, next) => {
   // access to req.isAuthenticated(): boolean
   // access to req.user: {email: string, id: number ...}
@@ -253,55 +280,69 @@ io.on("connection", (socket) => {
   });
   console.log("a user connected, id: ", socket.id);
 
-  socket.on("cell:clicked", (payload) => {
-    console.log("broadcasting colorCell message");
+  socket.on("cell:clicked", (payload: SocketPayload["cell:toggled"]) => {
     socket.broadcast.emit("cell:toggled", payload);
   });
 
-  // player:left will be emitted from disconnecting, so
-  // socket.on("room:exited", (payload) => {
-  //   console.log("room exited on server");
-  //   socket
-  //     .to(`board-${payload.boardId}`)
-  //     .emit("playerLeft", { exitedPlayer: payload.player });
-  // });
+  socket.on(
+    "player:ready",
+    async ({ userId, boardId, color }: SocketPayload["player:ready"]) => {
+      // update boardPlayer with color
+      // emit to others that we're ready WITH color
+      console.log({ userId, socketId: socket.id, color });
+      await updatePlayerReady({ userId, boardId, color });
+      socket
+        .to(`board-${boardId}`)
+        .emit("player:waiting", { userId, socketId: socket.id, color });
+    }
+  );
 
-  socket.on("room:joined", async (payload) => {
-    // TODO: if we need more security in rooms, can check to see if user is a BoardPlayer on this for "authentication"
+  socket.on(
+    "room:joined",
+    async ({ boardId, player }: SocketPayload["room:joined"]) => {
+      // TODO: if we need more security in rooms, can check to see if user is a BoardPlayer on this for "authentication"
+      const userId = player.user.id;
+      const socketId = socket.id;
+      const updatedPlayer = await updatePlayerSocketId({
+        userId,
+        boardId,
+        socketId,
+      });
 
-    console.log(payload);
-    await prisma.boardPlayer.update({
-      where: {
-        boardPlayerId: {
-          userId: payload.player.user.id,
-          boardId: payload.boardId,
-        },
-      },
-      data: {
+      const newPlayer: GetBoardPlayerDTO = {
         socketId: socket.id,
-      },
-    });
+        user: {
+          id: player.user.id,
+          email: player.user.email,
+          username: player.user.username,
+        },
+        board: {
+          id: boardId,
+        },
+        color: updatedPlayer.color,
+      };
+      socket.join(`board-${boardId}`);
+      socket.to(`board-${boardId}`).emit("player:joined", {
+        newPlayer,
+        socketId: socket.id,
+      });
+    }
+  );
 
-    const newPlayer: GetBoardPlayerDTO = {
-      socketId: socket.id,
-      user: {
-        id: payload.player.user.id,
-        email: payload.player.user.email,
-        username: null,
-      },
-      board: {
-        id: payload.boardId,
-      },
-    };
-    socket.join(`board-${payload.boardId}`);
-    socket.to(`board-${payload.boardId}`).emit("player:joined", {
-      newPlayer,
-      socketId: socket.id,
+  socket.on("game:started", (payload: SocketPayload["game:started"]) => {
+    const { boardId } = payload;
+    createBoardObjectives({ boardId }).then((boardObjectives) => {
+      io.sockets
+        .in(`board-${boardId}`)
+        .emit("objectives:created", boardObjectives);
     });
   });
 
-  socket.on("disconnecting", () => {
+  socket.on("disconnecting", async () => {
     const [socketId, boardId] = socket.rooms;
+    // nullify their socket id
+    // const player = await updatePlayerSocketId({ boardId, socketId });
+    // console.log("disconnecting player, after disconnect: ", player);
     socket.to(boardId).emit("player:left", { socketId });
   });
 });

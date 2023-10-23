@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Board, Prisma } from "@prisma/client";
 
 export type Score = Map<"mine" | "theirs", Set<number>>;
 
@@ -91,6 +91,7 @@ const GetBoardPlayer = Prisma.validator<Prisma.BoardPlayerDefaultArgs>()({
       },
     },
     board: { select: { id: true } },
+    color: true,
     socketId: true,
   },
 });
@@ -124,6 +125,23 @@ const MyGames = Prisma.validator<Prisma.BoardDefaultArgs>()({
 
 export type MyGamesDTO = Prisma.BoardGetPayload<typeof MyGames>;
 
+const BoardObjectives = Prisma.validator<Prisma.BoardObjectiveDefaultArgs>()({
+  include: {
+    objective: {
+      select: {
+        displayName: true,
+        id: true,
+        countable: true,
+        countLimit: true,
+      },
+    },
+  },
+});
+
+export type BoardObjectivesDTO = Prisma.BoardObjectiveGetPayload<
+  typeof BoardObjectives
+>;
+
 declare global {
   namespace Express {
     interface User {
@@ -132,6 +150,7 @@ declare global {
     }
   }
 }
+
 // old: this was my original model for the board DTO, without using Prisma's API
 // prefer the Prisma method above as it seems more well-equipped to handle changing models
 // export interface CreateBoardDTO {
@@ -143,3 +162,36 @@ declare global {
 //   seed?: number;
 //   gameType: "LOCKOUT" | "STANDARD" | "BLACKOUT";
 // }
+
+export type ObjectValues<T extends Record<string, unknown>> = T[keyof T];
+//Then use it like this: type Values = ObjectValues<typeof KeyToVal>
+
+export type SocketPayload = {
+  "player:ready": { userId: number; boardId: string; color: string };
+  "objectives:created": BoardObjectivesDTO[];
+  "player:joined": { newPlayer: GetBoardPlayerDTO; socketId: string };
+  "room:joined": {
+    player: GetBoardPlayerDTO;
+    boardId: string;
+    color: string;
+  };
+  "player:left": {
+    socketId: string;
+  };
+  "player:waiting": { userId: number; socketId: string; color: string };
+  "cell:toggled": {
+    userId: number;
+    cellId: BroadcastClickArgs["cellId"];
+    eventType: BroadcastClickArgs["eventType"];
+  };
+  "game:started": {
+    boardId: string;
+  };
+};
+
+export type SocketAction = keyof SocketPayload;
+
+// export type PossiblePayloads = ObjectValues<typeof SocketPayload>;
+
+// TODO: find out if this is kosher
+export type PossiblePayloads = SocketPayload[SocketAction];
