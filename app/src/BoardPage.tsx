@@ -1,16 +1,20 @@
 import { Container } from "@radix-ui/themes";
+import "./styles/board.css";
 import { useState, useEffect } from "react";
 import {
   GetBoardPlayerDTO,
   BoardObjectivesDTO,
   PlayerMap,
   Score,
+  SocketPayload,
+} from "shared/types";
 import { Board } from "./Board";
 import { ConnectionState } from "./ConnectionState";
 import { socket } from "./socket";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { StartButton } from "./StartButton";
 import { CirclePicker } from "react-color";
+import { socketOn } from "./socket-actions";
 
 export const BoardPage = () => {
   const { currentUser, loading, error } = useCurrentUser();
@@ -107,7 +111,12 @@ export const BoardPage = () => {
       ["mine", score.get("mine")],
     ]) as Score;
     setScore(newScore);
-    socket.emit("cell:clicked", { cellId, eventType, userId: currentUser?.id });
+    socket.emit("cell:clicked", {
+      cellId,
+      eventType,
+      boardId: window.location.pathname.split("/")[2],
+      userId: currentUser?.id,
+    });
   };
 
   const getPlayers = async (): Promise<GetBoardPlayerDTO[]> => {
@@ -141,12 +150,35 @@ export const BoardPage = () => {
     return await response.json();
   };
 
-  socket.on("player:left", (payload) => {
-    const { socketId } = payload;
+  // on("player:ready", (payload: PossiblePayloads) => {
+  //   console.log(payload);
+  // });
+
+  socketOn("player:left", (payload) => {
+    const { socketId } = payload as SocketPayload["player:left"];
     const updatedPlayers = new Map(players);
     updatedPlayers.delete(socketId);
     setPlayers(updatedPlayers);
   });
+
+  socketOn("player:joined", (payload) => {
+    const { socketId, newPlayer } = payload as SocketPayload["player:joined"];
+    const newPlayersMap = new Map(players).set(socketId, newPlayer);
+    console.log("new players after join: ", Array.from(newPlayersMap));
+    setPlayers(newPlayersMap);
+  });
+
+  // socket.on("player:joined", ({ newPlayer, socketId }): void => {
+  //   const newPlayersMap = new Map(players).set(socketId, newPlayer);
+  //   console.log("new players after join: ", Array.from(newPlayersMap));
+  //   setPlayers(newPlayersMap);
+  // });
+
+  // socket.on("player:left", ({ socketId }: SocketPayload["player:left"]) => {
+  //   const updatedPlayers = new Map(players);
+  //   updatedPlayers.delete(socketId);
+  //   setPlayers(updatedPlayers);
+  // });
 
   socket.on(
     "player:waiting",
@@ -178,29 +210,35 @@ export const BoardPage = () => {
       setAvailableColors(newColors);
     }
   );
-    const newMessages = [...messages];
-    newMessages.push({
-      message: `Player with id ${payload.userId} just ${payload.eventType}ed ${payload.cellId}`,
-      cellId: payload.cellId,
-    });
 
-    const theirPoints = new Set(score.get("theirs"));
+  socket.on(
+    "cell:toggled",
+    ({ userId, cellId, eventType }: SocketPayload["cell:toggled"]) => {
+      const newMessages = [...messages];
+      newMessages.push({
+        message: `Player with id ${userId} just ${eventType}ed ${cellId}`,
+        cellId: cellId,
+      });
 
-    if (payload.eventType === "claim") {
-      theirPoints.add(Number(payload.cellId));
-    } else if (payload.eventType === "unclaim") {
-      theirPoints.delete(Number(payload.cellId));
+      const theirPoints = new Set(score.get("theirs"));
+
+      if (eventType === "claim") {
+        theirPoints.add(Number(cellId));
+      } else if (eventType === "unclaim") {
+        theirPoints.delete(Number(cellId));
+      }
+
+      score.set("theirs", theirPoints);
+      const newScore = new Map([
+        ["theirs", theirPoints],
+        ["mine", score.get("mine")],
+      ]) as Score;
+      setScore(newScore);
+      setMessages(newMessages);
     }
+  );
 
-    score.set("theirs", theirPoints);
-    const newScore = new Map([
-      ["theirs", theirPoints],
-      ["mine", score.get("mine")],
-    ]) as Score;
-    setScore(newScore);
-    setMessages(newMessages);
-  });
-
+  // fetch data
   useEffect(() => {
     function onConnect(): void {
       setIsConnected(true);
@@ -283,13 +321,13 @@ export const BoardPage = () => {
         />
       )}
       {!allReady && (
-      <CirclePicker
+        <CirclePicker
           onChange={(color, event) => {
             console.log(event.target);
-          // TODO: convert this to HSL elsewhere so we can fux with opacity
+            // TODO: convert this to HSL elsewhere so we can fux with opacity
             setMyColor(availableColors.get(event.target.title)!);
             setSelectedColor(availableColors.get(event.target.title)!);
-        }}
+          }}
           colors={Array.from(availableColors.keys())}
         />
       )}

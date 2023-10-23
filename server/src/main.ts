@@ -23,9 +23,12 @@ import { PrismaClient, User } from "@prisma/client";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { config } from "../config";
-import { GetBoardPlayerDTO } from "shared/types";
-
-const pgSession = connectPgSimple(session);
+import {
+  GetBoardPlayerDTO,
+  BoardObjectivesDTO,
+  SocketPayload,
+  SocketAction,
+} from "shared/types";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -77,6 +80,7 @@ const serverOptions: IOServerOptions = {
 const prisma = new PrismaClient();
 const io = new Server(httpServer, serverOptions);
 
+const pgSession = connectPgSimple(session);
 app.use(
   session({
     cookie: {
@@ -87,7 +91,7 @@ app.use(
     secret: config.dev.sessionSecret,
     name: "bingoToken",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     store: new pgSession({
       conString: config.dev.db,
       tableName: "sessions",
@@ -136,6 +140,12 @@ app.get("/api/get-rooms", async (req, res, next) => {
   } catch (err) {
     return res.status(500).send(err?.message);
   }
+});
+
+app.post("/api/board-objectives/create", async (req, res) => {
+  const boardObjectives = await createBoardObjectives({
+    boardId: req.body.boardId,
+  });
 });
 
 app.post("/api/create-objectives", async (req, res) => {
@@ -270,8 +280,7 @@ io.on("connection", (socket) => {
   });
   console.log("a user connected, id: ", socket.id);
 
-  socket.on("cell:clicked", (payload) => {
-    console.log("broadcasting colorCell message");
+  socket.on("cell:clicked", (payload: SocketPayload["cell:toggled"]) => {
     socket.broadcast.emit("cell:toggled", payload);
   });
 
@@ -291,34 +300,41 @@ io.on("connection", (socket) => {
   socket.on(
     "room:joined",
     async ({ boardId, player }: SocketPayload["room:joined"]) => {
-    // TODO: if we need more security in rooms, can check to see if user is a BoardPlayer on this for "authentication"
+      // TODO: if we need more security in rooms, can check to see if user is a BoardPlayer on this for "authentication"
       const userId = player.user.id;
       const socketId = socket.id;
       const updatedPlayer = await updatePlayerSocketId({
         userId,
         boardId,
         socketId,
-    });
+      });
 
-    const newPlayer: GetBoardPlayerDTO = {
-      socketId: socket.id,
-      user: {
+      const newPlayer: GetBoardPlayerDTO = {
+        socketId: socket.id,
+        user: {
           id: player.user.id,
           email: player.user.email,
           username: player.user.username,
-      },
-      board: {
+        },
+        board: {
           id: boardId,
-      },
+        },
         color: updatedPlayer.color,
-    };
+      };
       socket.join(`board-${boardId}`);
       socket.to(`board-${boardId}`).emit("player:joined", {
-      newPlayer,
-      socketId: socket.id,
+        newPlayer,
+        socketId: socket.id,
       });
     }
   );
+
+  socket.on("game:started", (payload: SocketPayload["game:started"]) => {
+    const { boardId } = payload;
+    createBoardObjectives({ boardId }).then((boardObjectives) => {
+      io.sockets
+        .in(`board-${boardId}`)
+        .emit("objectives:created", boardObjectives);
     });
   });
 
