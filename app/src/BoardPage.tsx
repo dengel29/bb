@@ -1,6 +1,10 @@
 import { Container } from "@radix-ui/themes";
 import { useState, useEffect } from "react";
-import { GetBoardPlayerDTO, PlayerMap, Score } from "shared/types";
+import {
+  GetBoardPlayerDTO,
+  BoardObjectivesDTO,
+  PlayerMap,
+  Score,
 import { Board } from "./Board";
 import { ConnectionState } from "./ConnectionState";
 import { socket } from "./socket";
@@ -44,6 +48,7 @@ export const BoardPage = () => {
 
   const [score, setScore] = useState(initialScore);
   const [players, setPlayers] = useState<PlayerMap>(new Map());
+  const [objectives, setObjectives] = useState<BoardObjectivesDTO[]>([]);
 
   const [messages, setMessages] = useState<
     { message: string; cellId: number }[]
@@ -68,8 +73,20 @@ export const BoardPage = () => {
 
     // on ack, disable color and ready button
   };
-    socket.emit("ready", { userId: currentUser?.id, color: selectedColor });
+
+  const handleGameStart = () => {
+    socket.emitWithAck("game:started", {
+      boardId: window.location.pathname.split("/")[2],
+    });
   };
+
+  socket.on(
+    "objectives:created",
+    (payload: SocketPayload["objectives:created"]) => {
+      setObjectives(payload);
+    }
+  );
+
   const broadcastClick = ({
     cellId,
     eventType,
@@ -108,11 +125,21 @@ export const BoardPage = () => {
     return await response.json();
   };
 
-  socket.on("player:joined", (payload): void => {
-    const { newPlayer, socketId } = payload;
-    const newPlayersMap = new Map(players).set(socketId, newPlayer);
-    setPlayers(newPlayersMap);
-  });
+  const getObjectives = async (): Promise<BoardObjectivesDTO[]> => {
+    const boardId = window.location.pathname.split("/")[2];
+
+    const response = await fetch(
+      `http://localhost:3000/api/rooms/objectives?board=${boardId}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return await response.json();
+  };
 
   socket.on("player:left", (payload) => {
     const { socketId } = payload;
@@ -205,6 +232,10 @@ export const BoardPage = () => {
       setPlayers(playerMap);
     });
 
+    getObjectives().then((objectives: BoardObjectivesDTO[]) => {
+      setObjectives(objectives);
+    });
+
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
@@ -263,12 +294,19 @@ export const BoardPage = () => {
         />
       )}
       <StartButton
-        players={players}
-        // clickHandler={handleReady}
+        clickHandler={handleReady}
         color={selectedColor}
+        allReady={allReady}
       />
       {currentUser && (
-        <Board broadcastClick={broadcastClick} score={score}></Board>
+        <Board
+          broadcastClick={broadcastClick}
+          score={score}
+          allReady={allReady}
+          generateBoard={handleGameStart}
+          objectives={objectives}
+          gameColors={gamecolors}
+        ></Board>
       )}
     </Container>
   );

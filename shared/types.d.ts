@@ -124,6 +124,23 @@ const MyGames = Prisma.validator<Prisma.BoardDefaultArgs>()({
 
 export type MyGamesDTO = Prisma.BoardGetPayload<typeof MyGames>;
 
+const BoardObjectives = Prisma.validator<Prisma.BoardObjectiveDefaultArgs>()({
+  include: {
+    objective: {
+      select: {
+        displayName: true,
+        id: true,
+        countable: true,
+        countLimit: true,
+      },
+    },
+  },
+});
+
+export type BoardObjectivesDTO = Prisma.BoardObjectiveGetPayload<
+  typeof BoardObjectives
+>;
+
 declare global {
   namespace Express {
     interface User {

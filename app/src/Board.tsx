@@ -1,19 +1,25 @@
 import { Grid } from "@radix-ui/themes";
-import { useState } from "react";
+// import { useState } from "react";
 import { BingoCell } from "./Cell";
 import "./App.css";
-import { BroadcastClickArgs, Score } from "shared/types";
-
-const objectives = Array.from({ length: 25 }, (_, i) => `Objective #${i}`);
+import "./styles/board.css";
+import { BoardObjectivesDTO, BroadcastClickArgs, Score } from "shared/types";
 
 export const Board = ({
   broadcastClick,
   score,
+  allReady,
+  generateBoard,
+  objectives,
+  gameColors,
 }: {
   broadcastClick: (args: BroadcastClickArgs) => void;
   score: Score;
+  allReady: boolean;
+  generateBoard: () => void;
+  objectives: BoardObjectivesDTO[];
+  gameColors: { mine: string; theirs: string };
 }): JSX.Element => {
-  const [objectivesState] = useState<string[]>(objectives);
   const handleClickBingoCell = (
     event: React.MouseEvent<HTMLButtonElement>
   ): React.MouseEvent<HTMLButtonElement, MouseEvent> => {
@@ -36,9 +42,9 @@ export const Board = ({
 
     let owner;
     if (myScore && myScore.has(cellId)) {
-      owner = "cell__mine";
+      owner = `bg-${gameColors.mine}`;
     } else if (theirScore && theirScore.has(cellId)) {
-      owner = "cell__theirs";
+      owner = `bg-${gameColors.theirs}`;
     } else {
       owner = "cell__noOwner";
     }
@@ -47,19 +53,38 @@ export const Board = ({
 
   return (
     <>
-      <Grid columns={"5"} rows={"5"}>
-        {objectivesState.map((o, i) => {
-          return (
-            <BingoCell
-              cellId={i}
-              text={o}
-              handleClick={handleClickBingoCell}
-              owner={determineOwner(i)}
-              key={i + o}
-            />
-          );
-        })}
-      </Grid>
+      {allReady && objectives && (
+        <Grid columns={"5"} rows={"5"}>
+          {objectives &&
+            objectives.map((o, i) => {
+              return (
+                <BingoCell
+                  cellId={i}
+                  text={o.objective.displayName}
+                  handleClick={handleClickBingoCell}
+                  owner={determineOwner(i)}
+                  key={o.objectiveId}
+                />
+              );
+            })}
+        </Grid>
+      )}
+      {allReady && objectives.length < 1 && (
+        <Grid
+          columns={"1"}
+          rows={"1"}
+          style={{
+            height: "70vw",
+            width: "70vw",
+            margin: "0 auto",
+            border: "1px solid green",
+          }}
+        >
+          <div style={{ placeSelf: "center" }}>
+            <button onClick={generateBoard}>Reveal Board!</button>
+          </div>
+        </Grid>
+      )}
     </>
   );
 };

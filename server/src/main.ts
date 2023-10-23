@@ -12,6 +12,10 @@ import {
   addUserToBoard,
   getBoardPlayers,
   getMyGames,
+  updatePlayerReady,
+  updatePlayerSocketId,
+  createBoardObjectives,
+  getBoardObjectives,
 } from "./room-actions";
 import { magicLogin } from "./magic-login";
 import passport from "passport";
@@ -206,6 +210,19 @@ app.get("/api/rooms/players", async (req, res, next) => {
     const boardPlayers = await getBoardPlayers({ boardId });
     return res.status(201).json(boardPlayers);
   } catch (err) {}
+});
+
+app.get("/api/rooms/objectives", async (req, res, next) => {
+  try {
+    if (!req.isAuthenticated || !req.user) {
+      return res.status(401).send("Unauthorized, please sign in and try again");
+    }
+    const boardId = req.query.board as string;
+    const objectives = await getBoardObjectives({ boardId });
+    return res.status(201).json(objectives);
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 app.get("/user/me", (req, res, next) => {
