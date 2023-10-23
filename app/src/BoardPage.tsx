@@ -134,6 +134,7 @@ export const BoardPage = () => {
     return await response.json();
   };
 
+
   const getObjectives = async (): Promise<BoardObjectivesDTO[]> => {
     const boardId = window.location.pathname.split("/")[2];
 
@@ -153,6 +154,23 @@ export const BoardPage = () => {
   // on("player:ready", (payload: PossiblePayloads) => {
   //   console.log(payload);
   // });
+
+  socket.on("player:joined", (payload): void => {
+    const { newPlayer, socketId } = payload;
+    const newPlayersMap = new Map(players);
+
+    // make sure we aren't adding same user twice
+    const duplicatePlayer = Array.from(players.values()).find(
+      (player) => player.user.id === newPlayer.id
+    );
+
+    if (duplicatePlayer && duplicatePlayer.socketId) {
+      newPlayersMap.delete(duplicatePlayer.socketId);
+    }
+
+    newPlayersMap.set(socketId, newPlayer);
+    setPlayers(newPlayersMap);
+  });
 
   socketOn("player:left", (payload) => {
     const { socketId } = payload as SocketPayload["player:left"];
