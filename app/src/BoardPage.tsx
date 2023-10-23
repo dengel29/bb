@@ -15,7 +15,33 @@ export const BoardPage = () => {
     ["mine", new Set()],
     ["theirs", new Set()],
   ]);
-  const [selectedColor, setSelectedColor] = useState<any>(null);
+  const [selectedColor, setSelectedColor] = useState<string>("white");
+  const [myColor, setMyColor] = useState<string>(null);
+  const [gamecolors, setGamecolors] = useState<{
+    mine: string;
+    theirs: string;
+  }>({ mine: "", theirs: "" });
+
+  const allColors = new Map([
+    ["#ff6b6b", "red"],
+    // ["#cc5de8", "purple"],
+    // ["#845ef7", "violet"],
+    ["#5c7cfa", "indigo"],
+    ["#22b8cf", "cyan"],
+    // ["#20c997", "teal"],
+    // ["#51cf66", "green"],
+    // ["#94d82d", "lime"],
+    ["#fcc419", "yellow"],
+    // ["rgb(247, 103, 7)", "orange"],
+    // ["#df8545", "choco"],
+    // ["#b78f6d", "brown"],
+    // ["#9a9178", "sand"],
+    // ["#a8c648", "jungle"],
+    // ["#adb5bd", "gray"],
+  ]);
+  const [availableColors, setAvailableColors] =
+    useState<Map<string, string>>(allColors);
+
   const [score, setScore] = useState(initialScore);
   const [players, setPlayers] = useState<PlayerMap>(new Map());
 
@@ -32,6 +58,16 @@ export const BoardPage = () => {
     // player needs to pick a color before they can be "ready"
     // only handles sending the event to others in the room
     // payload for event should be {userId, socketId(relayed from server), color}
+    // should also change getBoardPlayers function to return color and assign it IF already chosen
+    // color, at this point, indicates if a player is "ready"
+    socket.emit("player:ready", {
+      userId: currentUser?.id,
+      boardId: window.location.pathname.split("/")[2],
+      color: selectedColor,
+    });
+
+    // on ack, disable color and ready button
+  };
     socket.emit("ready", { userId: currentUser?.id, color: selectedColor });
   };
   const broadcastClick = ({
@@ -85,7 +121,36 @@ export const BoardPage = () => {
     setPlayers(updatedPlayers);
   });
 
-  socket.on("cell:toggled", (payload) => {
+  socket.on(
+    "player:waiting",
+    ({ userId, socketId, color }: SocketPayload["player:waiting"]): void => {
+      const updatedPlayers = new Map(players) as PlayerMap;
+      const player = updatedPlayers.get(socketId);
+
+      const newColors = new Map(allColors);
+      const iterator = newColors.entries();
+      console.log("newest color color ", color);
+      const colors = new Set<string>([color]);
+      if (player) {
+        player.color = color;
+        setPlayers(updatedPlayers);
+        // TODO: delete the color from the availableColors list
+      }
+
+      Array.from(players.values()).forEach((p) => {
+        if (p?.color && currentUser && currentUser.id === Number(userId))
+          colors.add(p.color);
+      });
+
+      for (let i = 0; i < availableColors.size; i++) {
+        const [_key, value] = iterator.next().value;
+        if (colors.has(value)) {
+          newColors.delete(_key);
+        }
+      }
+      setAvailableColors(newColors);
+    }
+  );
     const newMessages = [...messages];
     newMessages.push({
       message: `Player with id ${payload.userId} just ${payload.eventType}ed ${payload.cellId}`,
@@ -122,10 +187,21 @@ export const BoardPage = () => {
     socket.on("disconnect", onDisconnect);
 
     getPlayers().then((players: GetBoardPlayerDTO[]) => {
-      const playerMap = players.reduce((accumulator, player) => {
+      const playerMap: PlayerMap = players.reduce((accumulator, player) => {
         return accumulator.set(player.socketId, player);
       }, new Map());
-
+      const colors: Set<string> = new Set([]);
+      playerMap.forEach((player) => {
+        if (player?.color) colors.add(player.color);
+      });
+      const newColors = new Map(allColors);
+      const iterator = newColors.entries();
+      console.log(colors);
+      for (let i = 0; i < availableColors.size; i++) {
+        const [_key, value] = iterator.next().value;
+        if (colors.has(value)) newColors.delete(_key);
+      }
+      setAvailableColors(newColors);
       setPlayers(playerMap);
     });
 
@@ -135,6 +211,7 @@ export const BoardPage = () => {
     };
   }, []);
 
+  // emit room joined when joining a room
   useEffect(() => {
     if (currentUser && !loading && !error)
       socket.emit("room:joined", {
@@ -144,32 +221,47 @@ export const BoardPage = () => {
       });
   }, [loading, currentUser, error]);
 
+  const [allReady, setAllReady] = useState<boolean>(false);
+
+  // check if all players ready
+  useEffect(() => {
+    const newGameColors = { mine: "", theirs: "" };
+    const allPlayersReady = (): boolean => {
+      return Array.from(players.values()).every((player) => {
+        if (currentUser && player.user.id === currentUser?.id) {
+          newGameColors.mine = player.color!;
+        } else {
+          newGameColors.theirs = player.color!;
+        }
+        return player.color;
+      });
+    };
+    setGamecolors(newGameColors);
+    setAllReady(allPlayersReady());
+  }, [players, currentUser]);
+
   return (
     <Container size="2">
       {currentUser && <p>Me: {currentUser.email}</p>}
       {players && (
-        <ConnectionState players={players} isConnected={isConnected} />
+        <ConnectionState
+          players={players}
+          isConnected={isConnected}
+          myColor={myColor}
+          currentUser={currentUser}
+        />
       )}
+      {!allReady && (
       <CirclePicker
-        onChange={(e) => {
+          onChange={(color, event) => {
+            console.log(event.target);
           // TODO: convert this to HSL elsewhere so we can fux with opacity
-          setSelectedColor(e.hex);
+            setMyColor(availableColors.get(event.target.title)!);
+            setSelectedColor(availableColors.get(event.target.title)!);
         }}
-        colors={[
-          "#7d1a1a",
-          "#a61e4d",
-          "#702682",
-          "#3b5bdb",
-          "#1864ab",
-          "#074652",
-          "#133d1b",
-          "#5c940d",
-          "#99330b",
-          "#4e2b15",
-          "#252521",
-          "#84a513",
-        ]}
-      />
+          colors={Array.from(availableColors.keys())}
+        />
+      )}
       <StartButton
         players={players}
         // clickHandler={handleReady}

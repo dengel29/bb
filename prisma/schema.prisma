@@ -28,6 +28,7 @@ model BoardPlayer {
   userId          Int
   boardId         String
   socketId        String?
+  color           String?
   boardObjectives BoardObjective[]
   board           Board            @relation(fields: [boardId], references: [id])
   user            User             @relation(fields: [userId], references: [id])

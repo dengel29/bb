@@ -258,45 +258,50 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("cell:toggled", payload);
   });
 
-  // player:left will be emitted from disconnecting, so
-  // socket.on("room:exited", (payload) => {
-  //   console.log("room exited on server");
-  //   socket
-  //     .to(`board-${payload.boardId}`)
-  //     .emit("playerLeft", { exitedPlayer: payload.player });
-  // });
+  socket.on(
+    "player:ready",
+    async ({ userId, boardId, color }: SocketPayload["player:ready"]) => {
+      // update boardPlayer with color
+      // emit to others that we're ready WITH color
+      console.log({ userId, socketId: socket.id, color });
+      await updatePlayerReady({ userId, boardId, color });
+      socket
+        .to(`board-${boardId}`)
+        .emit("player:waiting", { userId, socketId: socket.id, color });
+    }
+  );
 
-  socket.on("room:joined", async (payload) => {
+  socket.on(
+    "room:joined",
+    async ({ boardId, player }: SocketPayload["room:joined"]) => {
     // TODO: if we need more security in rooms, can check to see if user is a BoardPlayer on this for "authentication"
-
-    console.log(payload);
-    await prisma.boardPlayer.update({
-      where: {
-        boardPlayerId: {
-          userId: payload.player.user.id,
-          boardId: payload.boardId,
-        },
-      },
-      data: {
-        socketId: socket.id,
-      },
+      const userId = player.user.id;
+      const socketId = socket.id;
+      const updatedPlayer = await updatePlayerSocketId({
+        userId,
+        boardId,
+        socketId,
     });
 
     const newPlayer: GetBoardPlayerDTO = {
       socketId: socket.id,
       user: {
-        id: payload.player.user.id,
-        email: payload.player.user.email,
-        username: null,
+          id: player.user.id,
+          email: player.user.email,
+          username: player.user.username,
       },
       board: {
-        id: payload.boardId,
+          id: boardId,
       },
+        color: updatedPlayer.color,
     };
-    socket.join(`board-${payload.boardId}`);
-    socket.to(`board-${payload.boardId}`).emit("player:joined", {
+      socket.join(`board-${boardId}`);
+      socket.to(`board-${boardId}`).emit("player:joined", {
       newPlayer,
       socketId: socket.id,
+      });
+    }
+  );
     });
   });
 
