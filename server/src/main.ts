@@ -20,7 +20,7 @@ import {
 } from "./room-actions";
 import { magicLogin } from "./magic-login";
 import passport from "passport";
-import { PrismaClient, User } from "@prisma/client";
+import { Prisma, PrismaClient, User } from "@prisma/client";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { config } from "../config";
@@ -308,6 +308,10 @@ io.on("connection", (socket) => {
   socket.on(
     "room:joined",
     async ({ boardId, player }: SocketPayload["room:joined"]) => {
+      if (!player.user) {
+        return;
+      }
+      try {
       // TODO: if we need more security in rooms, can check to see if user is a BoardPlayer on this for "authentication"
       const userId = player.user.id;
       const socketId = socket.id;
@@ -334,6 +338,20 @@ io.on("connection", (socket) => {
         newPlayer,
         socketId: socket.id,
       });
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025") {
+            io.to(socket.id).emit("error", {
+              message:
+                "You arent allowed to enter this room without a password",
+              errorType: "unable-to-join",
+              redirectPath: "/play",
+            });
+          }
+        } else {
+          console.log(err);
+        }
+      }
     }
   );
 
