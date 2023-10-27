@@ -54,7 +54,7 @@ export const Board = ({
   return (
     <>
       {allReady && objectives && (
-        <Grid columns={"5"} rows={"5"}>
+        <Grid columns={"5"} rows={"5"} className={"board-container"}>
           {objectives &&
             objectives.map((o, i) => {
               return (

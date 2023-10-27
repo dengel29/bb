@@ -312,32 +312,32 @@ io.on("connection", (socket) => {
         return;
       }
       try {
-      // TODO: if we need more security in rooms, can check to see if user is a BoardPlayer on this for "authentication"
-      const userId = player.user.id;
-      const socketId = socket.id;
-      const updatedPlayer = await updatePlayerSocketId({
-        userId,
-        boardId,
-        socketId,
-      });
+        // TODO: if we need more security in rooms, can check to see if user is a BoardPlayer on this for "authentication"
+        const userId = player.user.id;
+        const socketId = socket.id;
+        const updatedPlayer = await updatePlayerSocketId({
+          userId,
+          boardId,
+          socketId,
+        });
 
-      const newPlayer: GetBoardPlayerDTO = {
-        socketId: socket.id,
-        user: {
-          id: player.user.id,
-          email: player.user.email,
-          username: player.user.username,
-        },
-        board: {
-          id: boardId,
-        },
-        color: updatedPlayer.color,
-      };
-      socket.join(`board-${boardId}`);
-      socket.to(`board-${boardId}`).emit("player:joined", {
-        newPlayer,
-        socketId: socket.id,
-      });
+        const newPlayer: GetBoardPlayerDTO = {
+          socketId: socket.id,
+          user: {
+            id: player.user.id,
+            email: player.user.email,
+            username: player.user.username,
+          },
+          board: {
+            id: boardId,
+          },
+          color: updatedPlayer.color,
+        };
+        socket.join(`board-${boardId}`);
+        socket.to(`board-${boardId}`).emit("player:joined", {
+          newPlayer,
+          socketId: socket.id,
+        });
       } catch (err) {
         if (err instanceof Prisma.PrismaClientKnownRequestError) {
           if (err.code === "P2025") {

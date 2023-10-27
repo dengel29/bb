@@ -22,12 +22,7 @@ export function ConnectionState({
             player?.user && (
               <div className="flex-small" key={player.socketId}>
                 <div
-                  className={`square bg-${
-                    (currentUser &&
-                      value.user.id === currentUser.id &&
-                      myColor) ||
-                    value.color
-                  }`}
+                  className={`square bg-${player.color} slide-in delay-1`}
                 ></div>
                 <p className="slide-in">{player.user.email}</p>
               </div>

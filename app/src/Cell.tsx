@@ -16,14 +16,19 @@ export const BingoCell = ({
       data-id={cellId}
       key={cellId}
       style={{
-        border: "1px solid red",
         height: "150px",
         width: "100%",
-        borderRadius: 0,
       }}
-      className={owner}
+      className={`cell ${owner}`}
     >
-      <Text size="3" style={{ pointerEvents: "none" }}>
+      <Text
+        size="3"
+        style={{
+          pointerEvents: "none",
+          textOverflow: "wrap",
+          hyphens: "auto",
+        }}
+      >
         {text}
       </Text>
     </button>

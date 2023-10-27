@@ -86,7 +86,7 @@ export const BoardPage = () => {
     );
     return playersMap;
   };
-  
+
   const {
     data: players,
     refetch: refetchPlayers,
@@ -114,8 +114,8 @@ export const BoardPage = () => {
     if (currentUser) {
       const payload: SocketPayload["player:ready"] = {
         userId: currentUser.id,
-      boardId: window.location.pathname.split("/")[2],
-      color: selectedColor,
+        boardId: window.location.pathname.split("/")[2],
+        color: selectedColor,
       };
       socketEmit("player:ready", payload);
     }
@@ -162,11 +162,11 @@ export const BoardPage = () => {
     setScore(newScore);
     if (currentUser) {
       const payload: SocketPayload["cell:toggled"] = {
-      cellId,
+        cellId,
         objectiveId: cellId,
-      eventType,
-      boardId: window.location.pathname.split("/")[2],
-      userId: currentUser?.id,
+        eventType,
+        boardId: window.location.pathname.split("/")[2],
+        userId: currentUser?.id,
       };
       socketEmit("cell:clicked", payload);
     }
@@ -180,8 +180,6 @@ export const BoardPage = () => {
       return;
     }
     const { newPlayer, socketId } = payload;
-    const newPlayersMap = new Map(players);
-
     // make sure we aren't adding same user twice
     const duplicatePlayer = Array.from(players.values()).find(
       (player) => player.user.id === newPlayer.user.id
@@ -192,7 +190,6 @@ export const BoardPage = () => {
     }
 
     players.set(socketId, newPlayer);
-    // setPlayers(newPlayersMap);
     refetchPlayers();
   });
 
@@ -247,29 +244,37 @@ export const BoardPage = () => {
 
   socketOn("cell:toggled", (payload: SocketPayload["cell:toggled"]) => {
     const { userId, cellId, eventType } = payload;
-      const newMessages = [...messages];
-      newMessages.push({
-        message: `Player with id ${userId} just ${eventType}ed ${cellId}`,
-        cellId: cellId,
-      });
+    const newMessages = [...messages];
+    newMessages.push({
+      message: `Player with id ${userId} just ${eventType}ed ${cellId}`,
+      cellId: cellId,
+    });
 
-      const theirPoints = new Set(score.get("theirs"));
+    const theirPoints = new Set(score.get("theirs"));
 
-      if (eventType === "claim") {
-        theirPoints.add(Number(cellId));
-      } else if (eventType === "unclaim") {
-        theirPoints.delete(Number(cellId));
-      }
-
-      score.set("theirs", theirPoints);
-      const newScore = new Map([
-        ["theirs", theirPoints],
-        ["mine", score.get("mine")],
-      ]) as Score;
-      setScore(newScore);
-      setMessages(newMessages);
+    if (eventType === "claim") {
+      theirPoints.add(Number(cellId));
+    } else if (eventType === "unclaim") {
+      theirPoints.delete(Number(cellId));
     }
-  );
+
+    score.set("theirs", theirPoints);
+    const newScore = new Map([
+      ["theirs", theirPoints],
+      ["mine", score.get("mine")],
+    ]) as Score;
+    setScore(newScore);
+    setMessages(newMessages);
+
+    // toggle off last marked then on for newly marked
+    const lastMarked = document.querySelector(`#last-marked`);
+    if (lastMarked) lastMarked.id = "";
+    const newMarked = document.querySelector(`[data-id="${cellId}"]`);
+    if (newMarked) {
+      console.log("new");
+      newMarked.id = "last-marked";
+    }
+  });
 
   // fetch data
   useEffect(() => {
@@ -354,21 +359,21 @@ export const BoardPage = () => {
   useEffect(() => {
     const newGameColors = { ...gameColors };
     if (currentUser && players) {
-    const allPlayersReady = (): boolean => {
+      const allPlayersReady = (): boolean => {
         console.log("checking all ready");
         // this doesnt work anymore...
         const ready = Array.from(players.values()).every((player) => {
           if (currentUser && player.user.id === currentUser.id) {
             newGameColors.mine = player.color;
-        } else {
-          newGameColors.theirs = player.color!;
-        }
-        return player.color;
-      });
+          } else {
+            newGameColors.theirs = player.color!;
+          }
+          return player.color;
+        });
         return ready;
-    };
+      };
       setGameColors(newGameColors);
-    setAllReady(allPlayersReady());
+      setAllReady(allPlayersReady());
     }
   }, [players, currentUser]);
 
@@ -386,42 +391,42 @@ export const BoardPage = () => {
         </div>
       )}
       {!socketError && (
-    <Container size="2">
-      {currentUser && <p>Me: {currentUser.email}</p>}
+        <Container size="2">
+          {currentUser && <p>Me: {currentUser.email}</p>}
           {players && currentUser && (
-        <ConnectionState
-          players={players}
-          isConnected={isConnected}
-          myColor={myColor}
-          currentUser={currentUser}
-        />
-      )}
-      {!allReady && (
-        <CirclePicker
-          onChange={(color, event) => {
-            // TODO: convert this to HSL elsewhere so we can fux with opacity
-            setMyColor(availableColors.get(event.target.title)!);
-            setSelectedColor(availableColors.get(event.target.title)!);
-          }}
-          colors={Array.from(availableColors.keys())}
-        />
-      )}
-      <StartButton
-        clickHandler={handleReady}
-        color={selectedColor}
-        allReady={allReady}
-      />
+            <ConnectionState
+              players={players}
+              isConnected={isConnected}
+              myColor={myColor}
+              currentUser={currentUser}
+            />
+          )}
+          {!allReady && (
+            <CirclePicker
+              onChange={(color, event) => {
+                // TODO: convert this to HSL elsewhere so we can fux with opacity
+                setMyColor(availableColors.get(event.target.title)!);
+                setSelectedColor(availableColors.get(event.target.title)!);
+              }}
+              colors={Array.from(availableColors.keys())}
+            />
+          )}
+          <StartButton
+            clickHandler={handleReady}
+            color={selectedColor}
+            allReady={allReady}
+          />
           {currentUser && objectives && (
-        <Board
-          broadcastClick={broadcastClick}
-          score={score}
-          allReady={allReady}
-          generateBoard={handleGameStart}
-          objectives={objectives}
+            <Board
+              broadcastClick={broadcastClick}
+              score={score}
+              allReady={allReady}
+              generateBoard={handleGameStart}
+              objectives={objectives}
               gameColors={gameColors}
-        ></Board>
-      )}
-    </Container>
+            ></Board>
+          )}
+        </Container>
       )}
     </>
   );
