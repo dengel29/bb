@@ -1,9 +1,13 @@
 import { FormEvent, useRef, useState } from "react";
-import { CreateBoardDTO } from "shared/types";
+import { CreateBoardDTO, GetBoardDTO } from "shared/types";
 import "./styles/create-board.css";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 
-export const CreateBoardForm = (): JSX.Element => {
+export const CreateBoardForm = ({
+  refetchRooms,
+}: {
+  refetchRooms: () => Promise<GetBoardDTO[]>;
+}): JSX.Element => {
   // TODO: user req.user instead of using useCurrentUser hook on client
   const { currentUser } = useCurrentUser();
   const [requestStatus, setRequestStatus] = useState<{
@@ -56,6 +60,7 @@ export const CreateBoardForm = (): JSX.Element => {
           });
         }
 
+        refetchRooms();
         return response;
       }
     } catch (error) {

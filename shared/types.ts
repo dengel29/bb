@@ -208,7 +208,8 @@ type errorEnum = "unable-to-join";
 
 export type SocketAction = keyof SocketPayload;
 
-export type PossiblePayloads = ObjectValues<SocketPayload>;
+export type PossiblePayloads = ObjectValues<typeof SocketPayload>;
+// export type PossiblePayloads = SocketPayload[SocketAction];
 
 export type PathPrefixedString = `/${string}`;
 

@@ -2,6 +2,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import {
   BoardObjectivesDTO,
   BoardPlayerCreatedDTO,
+  BroadcastClickArgs,
   CreateBoardDTO,
   CreateObjectiveDTO,
   GetBoardPlayerDTO,
@@ -36,6 +37,9 @@ export async function getRecentBoards() {
       createdAt: {
         gte: new Date(Date.now() - 8.64e7),
       },
+    },
+    orderBy: {
+      createdAt: "desc",
     },
     select: {
       name: true,
@@ -181,6 +185,9 @@ export async function getMyGames({
         },
       },
     },
+    orderBy: {
+      createdAt: "desc",
+    },
     select: {
       createdBy: {
         select: {
@@ -189,6 +196,7 @@ export async function getMyGames({
         },
       },
       updatedAt: true,
+      createdAt: true,
       name: true,
       id: true,
       boardPlayers: {
