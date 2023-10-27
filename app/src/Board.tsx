@@ -59,10 +59,10 @@ export const Board = ({
             objectives.map((o, i) => {
               return (
                 <BingoCell
-                  cellId={i}
+                  cellId={o.objectiveId}
                   text={o.objective.displayName}
                   handleClick={handleClickBingoCell}
-                  owner={determineOwner(i)}
+                  owner={determineOwner(o.objectiveId)}
                   key={o.objectiveId}
                 />
               );

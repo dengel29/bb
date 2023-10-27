@@ -1,6 +1,7 @@
 import { Container } from "@radix-ui/themes";
 import "./styles/board.css";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   GetBoardPlayerDTO,
   BoardObjectivesDTO,
@@ -14,7 +15,7 @@ import { socket } from "./socket";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { StartButton } from "./StartButton";
 import { CirclePicker } from "react-color";
-import { socketOn } from "./socket-actions";
+import { get } from "./requests";
 
 export const BoardPage = () => {
   const { currentUser, loading, error } = useCurrentUser();
@@ -51,8 +52,46 @@ export const BoardPage = () => {
     useState<Map<string, string>>(allColors);
 
   const [score, setScore] = useState(initialScore);
-  const [players, setPlayers] = useState<PlayerMap>(new Map());
-  const [objectives, setObjectives] = useState<BoardObjectivesDTO[]>([]);
+  // useQuery({queryKey: ['players'], })
+
+  const boardId = window.location.pathname.split("/")[2];
+  const getObjectives = async (): Promise<BoardObjectivesDTO[]> => {
+    const response = await get<BoardObjectivesDTO[]>(
+      `/api/rooms/objectives?board=${boardId}`,
+      true
+    );
+    return response;
+  };
+
+  const {
+    data: objectives,
+    refetch: refetchObjectives,
+    status: objectivesStatus,
+  } = useQuery({
+    queryKey: ["objectives", boardId],
+    queryFn: getObjectives,
+  });
+
+  const getPlayers = async (): Promise<PlayerMap> => {
+    const boardId = window.location.pathname.split("/")[2];
+    const response = await get<GetBoardPlayerDTO[]>(
+      `/api/rooms/players?board=${boardId}`,
+      true
+    );
+    const playersMap: PlayerMap = new Map(
+      response.map((player) => [player.socketId!, player])
+    );
+    return playersMap;
+  };
+  
+  const {
+    data: players,
+    refetch: refetchPlayers,
+    status: playersStatus,
+  } = useQuery({
+    queryKey: ["players"],
+    queryFn: getPlayers,
+  });
 
   const [messages, setMessages] = useState<
     { message: string; cellId: number }[]
@@ -69,27 +108,29 @@ export const BoardPage = () => {
     // payload for event should be {userId, socketId(relayed from server), color}
     // should also change getBoardPlayers function to return color and assign it IF already chosen
     // color, at this point, indicates if a player is "ready"
-    socket.emit("player:ready", {
-      userId: currentUser?.id,
+    if (currentUser) {
+      const payload: SocketPayload["player:ready"] = {
+        userId: currentUser.id,
       boardId: window.location.pathname.split("/")[2],
       color: selectedColor,
-    });
+      };
+      socketEmit("player:ready", payload);
+    }
 
     // on ack, disable color and ready button
+    refetchPlayers();
   };
 
   const handleGameStart = () => {
-    socket.emitWithAck("game:started", {
+    const payload: SocketPayload["game:started"] = {
       boardId: window.location.pathname.split("/")[2],
-    });
+    };
+    socketEmit("game:started", payload);
   };
 
-  socket.on(
-    "objectives:created",
-    (payload: SocketPayload["objectives:created"]) => {
-      setObjectives(payload);
-    }
-  );
+  socketOn("objectives:created", () => {
+    refetchObjectives();
+  });
 
   const broadcastClick = ({
     cellId,
@@ -269,28 +310,46 @@ export const BoardPage = () => {
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
 
-    getPlayers().then((players: GetBoardPlayerDTO[]) => {
-      const playerMap: PlayerMap = players.reduce((accumulator, player) => {
-        return accumulator.set(player.socketId, player);
-      }, new Map());
-      const colors: Set<string> = new Set([]);
-      playerMap.forEach((player) => {
-        if (player?.color) colors.add(player.color);
-      });
-      const newColors = new Map(allColors);
-      const iterator = newColors.entries();
-      console.log(colors);
-      for (let i = 0; i < availableColors.size; i++) {
-        const [_key, value] = iterator.next().value;
-        if (colors.has(value)) newColors.delete(_key);
-      }
-      setAvailableColors(newColors);
-      setPlayers(playerMap);
+    if (
+      !players ||
+      players?.size < 1 ||
+      !objectives ||
+      !currentUser ||
+      playersStatus != "success" ||
+      objectivesStatus !== "success"
+    ) {
+      console.log("thats a shame, no players");
+      return;
+    }
+    const myPoints = new Set(
+      objectives.flatMap((o) =>
+        o.claimedByPlayerId === currentUser?.id ? o.objectiveId : []
+      )
+    );
+
+    const otherPlayer: [string, GetBoardPlayerDTO] | undefined = Array.from(
+      players
+    ).find((element) => {
+      return element[1].user.id != currentUser?.id;
     });
 
-    getObjectives().then((objectives: BoardObjectivesDTO[]) => {
-      setObjectives(objectives);
-    });
+    if (!otherPlayer) {
+      console.log("thats a shame, no other PLAYERS");
+      return;
+    }
+    const theirPoints = new Set(
+      objectives.flatMap((o) =>
+        o.claimedByPlayerId === otherPlayer[1].user.id ? o.objectiveId : []
+      )
+    );
+    const score: Score = new Map([
+      ["mine", myPoints],
+      ["theirs", theirPoints],
+    ]);
+
+    setScore(score);
+
+    refetchObjectives();
 
     return () => {
       socket.off("connect", onConnect);
@@ -312,25 +371,30 @@ export const BoardPage = () => {
 
   // check if all players ready
   useEffect(() => {
-    const newGameColors = { mine: "", theirs: "" };
+    const newGameColors = { ...gameColors };
+    if (currentUser && players) {
     const allPlayersReady = (): boolean => {
-      return Array.from(players.values()).every((player) => {
-        if (currentUser && player.user.id === currentUser?.id) {
-          newGameColors.mine = player.color!;
+        console.log("checking all ready");
+        // this doesnt work anymore...
+        const ready = Array.from(players.values()).every((player) => {
+          if (currentUser && player.user.id === currentUser.id) {
+            newGameColors.mine = player.color;
         } else {
           newGameColors.theirs = player.color!;
         }
         return player.color;
       });
+        return ready;
     };
-    setGamecolors(newGameColors);
+      setGameColors(newGameColors);
     setAllReady(allPlayersReady());
+    }
   }, [players, currentUser]);
 
   return (
     <Container size="2">
       {currentUser && <p>Me: {currentUser.email}</p>}
-      {players && (
+          {players && currentUser && (
         <ConnectionState
           players={players}
           isConnected={isConnected}

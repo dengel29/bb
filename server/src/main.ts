@@ -16,6 +16,7 @@ import {
   updatePlayerSocketId,
   createBoardObjectives,
   getBoardObjectives,
+  claimObjective,
 } from "./room-actions";
 import { magicLogin } from "./magic-login";
 import passport from "passport";
@@ -280,8 +281,15 @@ io.on("connection", (socket) => {
   });
   console.log("a user connected, id: ", socket.id);
 
-  socket.on("cell:clicked", (payload: SocketPayload["cell:toggled"]) => {
-    socket.broadcast.emit("cell:toggled", payload);
+  socket.on("cell:clicked", async (payload: SocketPayload["cell:toggled"]) => {
+    const { boardId, userId, objectiveId, eventType } = payload;
+    await claimObjective({
+      boardId,
+      userId,
+      objectiveId,
+      eventType: eventType,
+    });
+    socket.to(`board-${boardId}`).emit("cell:toggled", payload);
   });
 
   socket.on(

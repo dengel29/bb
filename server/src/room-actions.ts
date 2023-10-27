@@ -205,6 +205,39 @@ export async function getMyGames({
   return myGames;
 }
 
+export async function claimObjective({
+  boardId,
+  objectiveId,
+  userId,
+  eventType,
+}: {
+  objectiveId: number;
+  boardId: string;
+  userId: number;
+  eventType: BroadcastClickArgs["eventType"];
+}) {
+  let userIdOrNull: number | null = userId;
+  if (eventType === "unclaim") {
+    userIdOrNull = null;
+  }
+  console.log(`${userIdOrNull ? "claimed by" : "unclaimedby"}: `, userId);
+  return await prisma.boardObjective.update({
+    where: {
+      boardObjectiveId: {
+        boardId,
+        objectiveId,
+      },
+    },
+    data: {
+      claimedByPlayerId: userIdOrNull,
+    },
+    select: {
+      claimedByPlayerId: true,
+      objective: true,
+    },
+  });
+}
+
 export async function updatePlayerReady({
   color,
   userId,
@@ -332,7 +365,7 @@ export async function getBoardObjectives({
 }: {
   boardId: string;
 }): Promise<BoardObjectivesDTO[]> {
-  return await prisma.boardObjective.findMany({
+  const objectives = await prisma.boardObjective.findMany({
     where: {
       boardId,
     },
@@ -347,4 +380,12 @@ export async function getBoardObjectives({
       },
     },
   });
+
+  function sortByPosition(a: BoardObjectivesDTO, b: BoardObjectivesDTO) {
+    if (a.cellX == b.cellX) return a.cellY - b.cellY;
+    return a.cellX - b.cellX;
+  }
+
+  const sortedObjectives = objectives.sort(sortByPosition);
+  return sortedObjectives;
 }
