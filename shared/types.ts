@@ -109,6 +109,7 @@ const MyGames = Prisma.validator<Prisma.BoardDefaultArgs>()({
       },
     },
     updatedAt: true,
+    createdAt: true,
     name: true,
     id: true,
     boardPlayers: {
@@ -171,9 +172,9 @@ export type SocketPayload = {
   "objectives:created": BoardObjectivesDTO[];
   "player:joined": { newPlayer: GetBoardPlayerDTO; socketId: string };
   "room:joined": {
-    player: GetBoardPlayerDTO;
+    player: Partial<GetBoardPlayerDTO>;
     boardId: string;
-    color: string;
+    color?: string | undefined;
   };
   "player:left": {
     socketId: string;
@@ -182,16 +183,34 @@ export type SocketPayload = {
   "cell:toggled": {
     userId: number;
     cellId: BroadcastClickArgs["cellId"];
+    objectiveId: BroadcastClickArgs["cellId"];
     eventType: BroadcastClickArgs["eventType"];
+    boardId: string;
+  };
+  "cell:clicked": {
+    userId: number;
+    cellId: BroadcastClickArgs["cellId"];
+    objectiveId: BroadcastClickArgs["cellId"];
+    eventType: BroadcastClickArgs["eventType"];
+    boardId: string;
   };
   "game:started": {
     boardId: string;
   };
+  error: {
+    message: string;
+    errorType: errorEnum;
+    redirectPath: PathPrefixedString;
+  };
 };
+
+type errorEnum = "unable-to-join";
 
 export type SocketAction = keyof SocketPayload;
 
-// export type PossiblePayloads = ObjectValues<typeof SocketPayload>;
+export type PossiblePayloads = ObjectValues<SocketPayload>;
+
+export type PathPrefixedString = `/${string}`;
 
 // TODO: find out if this is kosher
-export type PossiblePayloads = SocketPayload[SocketAction];
+// export type PossiblePayloads = SocketPayload[SocketAction];
