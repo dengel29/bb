@@ -66,6 +66,7 @@ export async function bulkCreateObjectives(
     const result = await prisma.objective.createMany({ data: objectives });
     return result;
   } catch (error) {
+    // TODO return error for route to send back to client
     console.log(error);
   }
 }
@@ -165,8 +166,6 @@ export async function getBoardPlayers({
       socketId: true,
       color: true,
     },
-    // include: {
-    // },
   });
 
   return boardPlayers;

@@ -150,6 +150,7 @@ app.post("/api/board-objectives/create", async (req, res) => {
 });
 
 app.post("/api/create-objectives", async (req, res) => {
+  // TODO: return error to client if errors
   const createdObjectives = await bulkCreateObjectives(req.body);
   res.status(200).json(createdObjectives);
 });
@@ -196,13 +197,14 @@ app.post("/api/rooms/join", async (req, res) => {
         password,
         userId: user.id,
       });
-    if (!passwordMatch) {
-      return res.status(401).send("Password doesn't match");
-    }
+
+    if (!passwordMatch) return res.status(401).send("Password doesn't match");
+
     const boardPlayerWithBoard = await addUserToBoard({
       boardId: joiningBoardId,
       userId: joiningUserId,
     });
+
     // tried to do a server side redirect but kept getting access-control-allow-origin related errors
     // res.setHeader("Access-Control-Allow-Origin", "localhost");
     // res..status(302).location(`http://localhost:5173/play/${boardPlayerWithBoard.board.id}`);
