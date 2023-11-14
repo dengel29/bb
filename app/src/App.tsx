@@ -7,6 +7,7 @@ import { LoggedInPage } from "./LoggedIn.tsx";
 import { BoardPage } from "./BoardPage.tsx";
 import { ProfilePage } from "./ProfilePage.tsx";
 import "./index.css";
+import { HowToPlayPage } from "./HowToPlayPage.tsx";
 export const App = () => {
   const router = createBrowserRouter([
     {
@@ -40,6 +41,10 @@ export const App = () => {
     {
       path: "/login-success",
       element: <LoggedInPage />,
+    },
+    {
+      path: "/how-to-play",
+      element: <HowToPlayPage />,
     },
   ]);
   return <RouterProvider router={router} />;
