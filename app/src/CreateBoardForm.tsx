@@ -2,11 +2,14 @@ import { FormEvent, useRef, useState } from "react";
 import { CreateBoardDTO, GetBoardDTO } from "shared/types";
 import "./styles/create-board.css";
 import { useCurrentUser } from "./hooks/useCurrentUser";
+import { QueryObserverResult } from "@tanstack/react-query";
 
 export const CreateBoardForm = ({
   refetchRooms,
 }: {
-  refetchRooms: () => Promise<GetBoardDTO[]>;
+  refetchRooms: () => ReturnType<
+    () => Promise<QueryObserverResult<GetBoardDTO[]>>
+  >;
 }): JSX.Element => {
   // TODO: user req.user instead of using useCurrentUser hook on client
   const { currentUser } = useCurrentUser();
@@ -50,7 +53,7 @@ export const CreateBoardForm = ({
             "Content-Type": "application/json",
           },
         });
-        console.log(response.status);
+
         if (response.ok) {
           setRequestStatus({ error: false, reason: "" });
         } else {
