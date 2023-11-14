@@ -16,10 +16,11 @@ import {
   updatePlayerSocketId,
   createBoardObjectives,
   getBoardObjectives,
+  claimObjective,
 } from "./room-actions";
 import { magicLogin } from "./magic-login";
 import passport from "passport";
-import { PrismaClient, User } from "@prisma/client";
+import { Prisma, PrismaClient, User } from "@prisma/client";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { config } from "../config";
@@ -149,6 +150,7 @@ app.post("/api/board-objectives/create", async (req, res) => {
 });
 
 app.post("/api/create-objectives", async (req, res) => {
+  // TODO: return error to client if errors
   const createdObjectives = await bulkCreateObjectives(req.body);
   res.status(200).json(createdObjectives);
 });
@@ -195,13 +197,14 @@ app.post("/api/rooms/join", async (req, res) => {
         password,
         userId: user.id,
       });
-    if (!passwordMatch) {
-      return res.status(401).send("Password doesn't match");
-    }
+
+    if (!passwordMatch) return res.status(401).send("Password doesn't match");
+
     const boardPlayerWithBoard = await addUserToBoard({
       boardId: joiningBoardId,
       userId: joiningUserId,
     });
+
     // tried to do a server side redirect but kept getting access-control-allow-origin related errors
     // res.setHeader("Access-Control-Allow-Origin", "localhost");
     // res..status(302).location(`http://localhost:5173/play/${boardPlayerWithBoard.board.id}`);
@@ -268,7 +271,7 @@ app.post("/log-out", (req, res, next) => {
       sameSite: true,
       httpOnly: true,
     });
-    res.redirect("http://localhost:5173/home");
+    return res.status(200).send();
   });
 });
 
@@ -280,8 +283,15 @@ io.on("connection", (socket) => {
   });
   console.log("a user connected, id: ", socket.id);
 
-  socket.on("cell:clicked", (payload: SocketPayload["cell:toggled"]) => {
-    socket.broadcast.emit("cell:toggled", payload);
+  socket.on("cell:clicked", async (payload: SocketPayload["cell:toggled"]) => {
+    const { boardId, userId, objectiveId, eventType } = payload;
+    await claimObjective({
+      boardId,
+      userId,
+      objectiveId,
+      eventType: eventType,
+    });
+    socket.to(`board-${boardId}`).emit("cell:toggled", payload);
   });
 
   socket.on(
@@ -300,32 +310,50 @@ io.on("connection", (socket) => {
   socket.on(
     "room:joined",
     async ({ boardId, player }: SocketPayload["room:joined"]) => {
-      // TODO: if we need more security in rooms, can check to see if user is a BoardPlayer on this for "authentication"
-      const userId = player.user.id;
-      const socketId = socket.id;
-      const updatedPlayer = await updatePlayerSocketId({
-        userId,
-        boardId,
-        socketId,
-      });
+      if (!player.user) {
+        return;
+      }
+      try {
+        // TODO: if we need more security in rooms, can check to see if user is a BoardPlayer on this for "authentication"
+        const userId = player.user.id;
+        const socketId = socket.id;
+        const updatedPlayer = await updatePlayerSocketId({
+          userId,
+          boardId,
+          socketId,
+        });
 
-      const newPlayer: GetBoardPlayerDTO = {
-        socketId: socket.id,
-        user: {
-          id: player.user.id,
-          email: player.user.email,
-          username: player.user.username,
-        },
-        board: {
-          id: boardId,
-        },
-        color: updatedPlayer.color,
-      };
-      socket.join(`board-${boardId}`);
-      socket.to(`board-${boardId}`).emit("player:joined", {
-        newPlayer,
-        socketId: socket.id,
-      });
+        const newPlayer: GetBoardPlayerDTO = {
+          socketId: socket.id,
+          user: {
+            id: player.user.id,
+            email: player.user.email,
+            username: player.user.username,
+          },
+          board: {
+            id: boardId,
+          },
+          color: updatedPlayer.color,
+        };
+        socket.join(`board-${boardId}`);
+        socket.to(`board-${boardId}`).emit("player:joined", {
+          newPlayer,
+          socketId: socket.id,
+        });
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025") {
+            io.to(socket.id).emit("error", {
+              message:
+                "You arent allowed to enter this room without a password",
+              errorType: "unable-to-join",
+              redirectPath: "/play",
+            });
+          }
+        } else {
+          console.log(err);
+        }
+      }
     }
   );
 

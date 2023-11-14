@@ -1,6 +1,7 @@
 import { Container } from "@radix-ui/themes";
 import { PropsWithChildren, useEffect } from "react";
 import { useHeader } from "./hooks/useHeader";
+import { HeaderNav } from "./HeaderNav";
 
 type PageProps = { title: string } & PropsWithChildren;
 export const PageContainer = (props: PageProps) => {
@@ -10,7 +11,7 @@ export const PageContainer = (props: PageProps) => {
   }, [props.title]);
   return (
     <Container>
-      {header}
+      {header ? <HeaderNav /> : null}
       {props.children}
     </Container>
   );

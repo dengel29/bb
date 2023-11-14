@@ -1,7 +1,10 @@
 import { PossiblePayloads, SocketAction } from "shared/types";
 import { socket } from "./socket";
 
-export function socketEmit(event: SocketAction, payload: PossiblePayloads) {
+export function socketEmit(
+  event: SocketAction,
+  payload: PossiblePayloads[SocketAction]
+) {
   socket.emit(event, payload);
 }
 

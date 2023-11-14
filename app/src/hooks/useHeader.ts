@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import { HeaderNav } from "../HeaderNav";
+// import { HeaderNav } from "../HeaderNav";
 
 export const useHeader = () => {
   const location = useLocation();
@@ -12,13 +12,14 @@ export const useHeader = () => {
     "/sign-in",
     "/play",
     "/profile",
+    "/how-to-play",
   ];
 
-  const header: JSX.Element | null = withHeaderLocations.some(
-    (l) => l === location.pathname
+  const header: boolean | null = withHeaderLocations.some((l) =>
+    location.pathname.startsWith(l)
   )
-    ? HeaderNav()
-    : null;
+    ? true
+    : false;
 
   return header;
 };

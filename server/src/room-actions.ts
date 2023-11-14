@@ -2,6 +2,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import {
   BoardObjectivesDTO,
   BoardPlayerCreatedDTO,
+  BroadcastClickArgs,
   CreateBoardDTO,
   CreateObjectiveDTO,
   GetBoardPlayerDTO,
@@ -37,6 +38,9 @@ export async function getRecentBoards() {
         gte: new Date(Date.now() - 8.64e7),
       },
     },
+    orderBy: {
+      createdAt: "desc",
+    },
     select: {
       name: true,
       id: true,
@@ -62,6 +66,7 @@ export async function bulkCreateObjectives(
     const result = await prisma.objective.createMany({ data: objectives });
     return result;
   } catch (error) {
+    // TODO return error for route to send back to client
     console.log(error);
   }
 }
@@ -161,8 +166,6 @@ export async function getBoardPlayers({
       socketId: true,
       color: true,
     },
-    // include: {
-    // },
   });
 
   return boardPlayers;
@@ -181,6 +184,9 @@ export async function getMyGames({
         },
       },
     },
+    orderBy: {
+      createdAt: "desc",
+    },
     select: {
       createdBy: {
         select: {
@@ -189,6 +195,7 @@ export async function getMyGames({
         },
       },
       updatedAt: true,
+      createdAt: true,
       name: true,
       id: true,
       boardPlayers: {
@@ -203,6 +210,39 @@ export async function getMyGames({
     },
   });
   return myGames;
+}
+
+export async function claimObjective({
+  boardId,
+  objectiveId,
+  userId,
+  eventType,
+}: {
+  objectiveId: number;
+  boardId: string;
+  userId: number;
+  eventType: BroadcastClickArgs["eventType"];
+}) {
+  let userIdOrNull: number | null = userId;
+  if (eventType === "unclaim") {
+    userIdOrNull = null;
+  }
+  console.log(`${userIdOrNull ? "claimed by" : "unclaimedby"}: `, userId);
+  return await prisma.boardObjective.update({
+    where: {
+      boardObjectiveId: {
+        boardId,
+        objectiveId,
+      },
+    },
+    data: {
+      claimedByPlayerId: userIdOrNull,
+    },
+    select: {
+      claimedByPlayerId: true,
+      objective: true,
+    },
+  });
 }
 
 export async function updatePlayerReady({
@@ -332,7 +372,7 @@ export async function getBoardObjectives({
 }: {
   boardId: string;
 }): Promise<BoardObjectivesDTO[]> {
-  return await prisma.boardObjective.findMany({
+  const objectives = await prisma.boardObjective.findMany({
     where: {
       boardId,
     },
@@ -347,4 +387,12 @@ export async function getBoardObjectives({
       },
     },
   });
+
+  function sortByPosition(a: BoardObjectivesDTO, b: BoardObjectivesDTO) {
+    if (a.cellX == b.cellX) return a.cellY - b.cellY;
+    return a.cellX - b.cellX;
+  }
+
+  const sortedObjectives = objectives.sort(sortByPosition);
+  return sortedObjectives;
 }

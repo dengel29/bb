@@ -17,19 +17,14 @@ export function ConnectionState({
       {!isConnected && <p>🔴</p>}
       <p>Players in this rooom</p>
       {players &&
-        Array.from(players).map(([, value]) => {
+        Array.from(players).map(([, player]) => {
           return (
-            value?.user && (
-              <div className="flex-small" key={value.socketId}>
+            player?.user && (
+              <div className="flex-small" key={player.socketId}>
                 <div
-                  className={`square bg-${
-                    (currentUser &&
-                      value.user.id === currentUser.id &&
-                      myColor) ||
-                    value.color
-                  }`}
+                  className={`square bg-${player.color} slide-in delay-1`}
                 ></div>
-                <p>{value.user.email}</p>
+                <p className="slide-in">{player.user.email}</p>
               </div>
             )
           );
