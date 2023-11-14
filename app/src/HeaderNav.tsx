@@ -6,11 +6,11 @@ export const HeaderNav = (): JSX.Element => {
   const { currentUser, loading, error } = useCurrentUser();
 
   const logOut = async () => {
-    const response = await fetch("http://localhost:3000/log-out", {
+    await fetch("http://localhost:3000/log-out", {
       method: "POST",
       credentials: "include",
     });
-    console.log(response);
+    window.location.replace("http://localhost:5173/home");
   };
 
   const authLink =
@@ -23,6 +23,7 @@ export const HeaderNav = (): JSX.Element => {
     <div className="full-width flex-even-row">
       <Link to="/">Home</Link>
       <Link to="/create-objectives">Create objectives</Link>
+      <Link to="/how-to-play">How to play</Link>
       <Link to="/play">Join a game</Link>
       <Link to="/profile">Profile</Link>
       {authLink}

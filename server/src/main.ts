@@ -269,7 +269,7 @@ app.post("/log-out", (req, res, next) => {
       sameSite: true,
       httpOnly: true,
     });
-    res.redirect("http://localhost:5173/home");
+    return res.status(200).send();
   });
 });
 
