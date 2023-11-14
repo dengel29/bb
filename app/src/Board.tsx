@@ -35,13 +35,23 @@ export const Board = ({
     return event;
   };
 
+  const sharedStyle = `linear-gradient(0.35turn, var(--${gameColors.mine}-7) 0 50%, var(--${gameColors.theirs}-7) 50% 100%)`;
+
   const determineOwner = (cellId: number): string => {
     // the ! at the end of these get calls tells Typescript they are NOT going to be undefined
     const myScore: Set<number> = score.get("mine")!;
     const theirScore: Set<number> = score.get("theirs")!;
 
     let owner;
-    if (myScore && myScore.has(cellId)) {
+    if (
+      myScore &&
+      myScore.has(cellId) &&
+      theirScore &&
+      theirScore.has(cellId)
+    ) {
+      console.log(owner);
+      owner = "shared";
+    } else if (myScore && myScore.has(cellId)) {
       owner = `bg-${gameColors.mine}`;
     } else if (theirScore && theirScore.has(cellId)) {
       owner = `bg-${gameColors.theirs}`;
@@ -56,14 +66,21 @@ export const Board = ({
       {allReady && objectives && (
         <Grid columns={"5"} rows={"5"} className={"board-container"}>
           {objectives &&
-            objectives.map((o, i) => {
+            objectives.map((o) => {
               return (
                 <BingoCell
                   cellId={o.objectiveId}
+                  countable={o.objective.countable || false}
+                  countLimit={o.objective.countLimit || undefined}
                   text={o.objective.displayName}
                   handleClick={handleClickBingoCell}
                   owner={determineOwner(o.objectiveId)}
                   key={o.objectiveId}
+                  sharedStyle={
+                    determineOwner(o.objectiveId) === "shared"
+                      ? sharedStyle
+                      : ""
+                  }
                 />
               );
             })}
