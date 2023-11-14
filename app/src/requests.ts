@@ -4,26 +4,35 @@ const domain = "http://localhost:3000";
 
 export async function get<T>(
   path: PathPrefixedString,
-  authenticated: boolean
+  authenticated: boolean,
+  options?: RequestInit
 ): Promise<T> {
-  const options: RequestInit = {
+  const defaultOptions: RequestInit = {
     method: "GET",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
   };
+  let opts;
 
-  if (!authenticated) delete options["credentials"];
+  if (options) {
+    // TODO: merge options smarter
+    opts = { ...options, ...defaultOptions };
+  } else {
+    opts = defaultOptions;
+  }
 
-  const response = await fetch(`${domain}${path}`, options);
+  if (!authenticated) delete defaultOptions["credentials"];
+
+  const response = await fetch(`${domain}${path}`, opts);
   return await response.json();
 }
 
 export async function post(
   path: string,
   authenticated: boolean,
-  body: any // TODO: set up type dictionary like for sockets
+  body: BodyInit // TODO: set up type dictionary like for sockets
 ): Promise<Response> {
   const options: RequestInit = {
     method: "POST",
