@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { CreateObjectiveDTO } from "shared/types";
 import { PageContainer } from "./PageContainer";
+import "./styles/objectives.css";
 
 const ObjectiveInputSet = ({
   setId,
@@ -21,64 +22,49 @@ const ObjectiveInputSet = ({
     firstInput.current?.focus();
   }, []);
   return (
-    <>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          marginBottom: "3%",
-        }}
-        key={setId}
-      >
-        <button onClick={() => removeItem(setId)}>Delete Objective</button>
-        <label
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            marginRight: "10%",
-          }}
-        >
-          Display Name
-          <input
-            type="text"
-            name={`displayName${setId}`}
-            required
-            ref={firstInput}
-          />
-          <br />
-          <small>What will be shown in the cell</small>
-        </label>
-        <label
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            marginRight: "10%",
-          }}
-        >
-          Countable
-          <input
-            ref={countableCheckboxRef}
-            type="checkbox"
-            name={`countable${setId}`}
-            defaultChecked={false}
-            onChange={() => updateCountable()}
-          />
-          <small>
-            e.g. Visit <strong>5</strong> 7-11s
-          </small>
-        </label>
-        <label style={{ display: "flex", flexDirection: "column" }}>
-          Count Limit
-          <input
-            type="number"
-            name={`countLimit${setId}`}
-            disabled={!isCountable}
-          />
-          <small>How many times a player must execute the task</small>
-        </label>
+    <div>
+      <div className="objectives-list__container">
+        <div key={setId} className="objective-item__container">
+          <button onClick={() => removeItem(setId)} className="delete btn">
+            Delete
+          </button>
+          <label>
+            Display Name
+            <input
+              type="text"
+              name={`displayName${setId}`}
+              required
+              ref={firstInput}
+            />
+            <small>What will be shown in the cell</small>
+          </label>
+          <label>
+            Countable
+            <input
+              ref={countableCheckboxRef}
+              type="checkbox"
+              name={`countable${setId}`}
+              defaultChecked={false}
+              onChange={() => updateCountable()}
+            />
+            <small>
+              e.g. Visit <strong>4</strong> churches
+            </small>
+          </label>
+          <label>
+            Count Limit
+            <input
+              type="number"
+              min={2}
+              name={`countLimit${setId}`}
+              disabled={!isCountable}
+            />
+            <small>How many times a player must execute the task</small>
+          </label>
+        </div>
+        <br />
       </div>
-      <hr style={{ width: "100%" }} />
-    </>
+    </div>
   );
 };
 
@@ -87,7 +73,7 @@ export const CreateObjectivesForm = (): JSX.Element => {
     id: 1,
   };
   const createObjectivesForm = useRef<HTMLFormElement>(null);
-  const [objectiveIds, setObjectiveIds] = useState<Set<number>>(new Set());
+  const [objectiveIds, setObjectiveIds] = useState<Set<number>>(new Set([0]));
 
   const removeObjective = (setId: number) => {
     const newObjectives = new Set(objectiveIds);
@@ -133,6 +119,10 @@ export const CreateObjectivesForm = (): JSX.Element => {
             },
           }
         );
+
+        // TODO: show success or error toast here
+        // 200 is a success
+        // error message should be sent with server response
         console.log(response.status);
 
         return response;
@@ -143,7 +133,8 @@ export const CreateObjectivesForm = (): JSX.Element => {
   }
 
   return (
-    <PageContainer title={"Create Objectives"}>
+    <PageContainer title={"Create Tasks"}>
+      <h1>Create Tasks For Taiwan</h1>
       <div>
         <form
           ref={createObjectivesForm}
@@ -154,29 +145,38 @@ export const CreateObjectivesForm = (): JSX.Element => {
             flexDirection: "column",
           }}
         >
-          {[...objectiveIds].map((inputSetId) => {
-            return (
-              <ObjectiveInputSet
-                key={inputSetId}
-                setId={inputSetId}
-                removeItem={removeObjective}
-              />
-            );
-          })}
+          <div className="objectives-list__scroll">
+            {[...objectiveIds].map((inputSetId) => {
+              return (
+                <ObjectiveInputSet
+                  key={inputSetId}
+                  setId={inputSetId}
+                  removeItem={removeObjective}
+                />
+              );
+            })}
+          </div>
+          <br />
           <button
             type="button"
+            className="btn neutral"
             onClick={() => {
-              console.log("what");
-              const newObjectiveIds = new Set(objectiveIds).add(
-                objectiveIds.size
-              );
+              let value;
+              if (objectiveIds.size === 0) {
+                value = 0;
+              } else {
+                for (value of objectiveIds);
+              }
+              const newObjectiveIds = new Set(objectiveIds).add(value! + 1);
               setObjectiveIds(newObjectiveIds);
             }}
           >
-            +
+            Add another task
           </button>
-          <br />
-          <button type="submit">Submit</button>
+          <button type="submit" className="btn submit">
+            Submit {objectiveIds.size} Task
+            {objectiveIds.size > 1 ? "s" : ""}
+          </button>
         </form>
       </div>
     </PageContainer>
