@@ -1,4 +1,7 @@
 import express, { Request } from "express";
+import fetch from "node-fetch";
+import { convertXML } from "simple-xml-to-json";
+import iso31662 from "iso-3166-2";
 import path from "path";
 import http, { ServerResponse } from "http";
 import cors from "cors";
@@ -17,6 +20,8 @@ import {
   createBoardObjectives,
   getBoardObjectives,
   claimObjective,
+  createOrUpdateCountryCity,
+  updateUserCountry,
 } from "./room-actions";
 import { magicLogin } from "./magic-login";
 import passport from "passport";
@@ -149,6 +154,87 @@ app.post("/api/board-objectives/create", async (req, res) => {
   });
 });
 
+async function getCountryFromCoordinates({
+  lat,
+  long,
+}: {
+  lat: number;
+  long: number;
+}) {
+  // get XML location data from lat-long
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${long}`
+  );
+  const data = await res.text();
+
+  // convert XML to JSON
+  const geoJson = convertXML(data);
+
+  // pull out country and city data from information from JSON
+  const [{ result }, { addressparts }] = geoJson.reversegeocode.children;
+  const address: {
+    house_number: string;
+    road: string;
+    neighbourhood: string;
+    suburb: string;
+    village: string;
+    city: string;
+    "ISO3166-2-lvl4": string;
+    postcode: string;
+    country: string;
+    country_code: string;
+  } = {};
+  // address object will looks like this:
+  // {
+  //   house_number: '12號',
+  //   road: '南京東路五段',
+  //   neighbourhood: '吉祥里',
+  //   suburb: '松山區',
+  //   village: '中崙',
+  //   city: '臺北市',
+  //   'ISO3166-2-lvl4': 'TW-TPE',
+  //   postcode: '105',
+  //   country: '臺灣',
+  //   country_code: 'tw'
+  // }
+  addressparts.children.forEach((item) => {
+    const key = Object.keys(item)[0];
+    address[key] = item[key].content;
+  });
+  const countryLocalName = address.country;
+  const cityLocalName = address.city;
+  const { name: cityName, countryName } = iso31662.subdivision(
+    address["ISO3166-2-lvl4"]
+  );
+
+  // save countryLocalName, cityLocalName, name (ie cityName) and countryName
+  const cityAndCountry = await createOrUpdateCountryCity({
+    countryLocalName,
+    cityLocalName,
+    cityName,
+    countryName,
+  });
+
+  return cityAndCountry;
+}
+app.post("/api/coords-to-country", async (req, res) => {
+  if (!req.isAuthenticated || !req.user) {
+    return res.status(401).send();
+  }
+
+  const result = await getCountryFromCoordinates({
+    lat: req.body.latitude,
+    long: req.body.longitude,
+  });
+
+  await updateUserCountry({
+    userId: req.user?.id,
+    countryId: result.country.id,
+    cityId: result.city.id,
+  });
+
+  return result;
+});
 app.post("/api/create-objectives", async (req, res) => {
   // TODO: return error to client if errors
   const createdObjectives = await bulkCreateObjectives(req.body);
