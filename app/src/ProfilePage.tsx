@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { MyGamesDTO } from "shared/types";
 import { PageContainer } from "./PageContainer";
+import { LocationGrabber } from "./LocationGrabber";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { Link } from "react-router-dom";
 export const ProfilePage = (): JSX.Element => {
@@ -51,12 +52,16 @@ export const ProfilePage = (): JSX.Element => {
     <PageContainer title={"Profile"}>
       <div
         style={{
-          display: "inline-flex",
+          display: "flex",
+          justifyContent: "space-between",
           alignItems: "baseline",
         }}
       >
-        <h1>It's my life |</h1>
-        <h2>don't u forget</h2>
+        <div>
+          <h1>It's my life |</h1>
+          <h2>don't u forget</h2>
+        </div>
+        <LocationGrabber />
       </div>
       <hr />
       <h1>My games</h1>

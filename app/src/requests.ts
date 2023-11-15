@@ -32,7 +32,7 @@ export async function get<T>(
 export async function post(
   path: string,
   authenticated: boolean,
-  body: BodyInit // TODO: set up type dictionary like for sockets
+  body: Omit<RequestInit["body"], "ReadableStream"> // TODO: set up type dictionary like for sockets
 ): Promise<Response> {
   const options: RequestInit = {
     method: "POST",
