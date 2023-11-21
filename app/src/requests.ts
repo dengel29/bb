@@ -6,7 +6,7 @@ export async function get<T>(
   path: PathPrefixedString,
   authenticated: boolean,
   options?: RequestInit
-): Promise<T> {
+): Promise<T | string> {
   const defaultOptions: RequestInit = {
     method: "GET",
     credentials: "include",
@@ -26,14 +26,18 @@ export async function get<T>(
   if (!authenticated) delete defaultOptions["credentials"];
 
   const response = await fetch(`${domain}${path}`, opts);
-  return await response.json();
+  if (response.ok) {
+    return await response.json();
+  } else {
+    return response.statusText;
+  }
 }
 
-export async function post(
+export async function post<T>(
   path: string,
   authenticated: boolean,
   body: Omit<RequestInit["body"], "ReadableStream"> // TODO: set up type dictionary like for sockets
-): Promise<Response> {
+): Promise<T> {
   const options: RequestInit = {
     method: "POST",
     credentials: "include",
@@ -44,8 +48,8 @@ export async function post(
   };
 
   if (!authenticated) delete options["credentials"];
-
-  return await fetch(`${domain}${path}`, options);
+  const res = await fetch(`${domain}${path}`, options);
+  return await res.json();
 }
 
 export const requests = {
