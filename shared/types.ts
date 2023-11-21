@@ -41,6 +41,11 @@ const GetBoard = Prisma.validator<Prisma.BoardDefaultArgs>()({
     name: true,
     id: true,
     gameType: true,
+    boardPlayers: {
+      select: {
+        userId: true,
+      },
+    },
     createdBy: {
       select: {
         id: true,

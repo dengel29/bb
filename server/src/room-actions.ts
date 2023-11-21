@@ -52,6 +52,11 @@ export async function getRecentBoards() {
           username: true,
         },
       },
+      boardPlayers: {
+        select: {
+          userId: true,
+        },
+      },
     },
   });
 
