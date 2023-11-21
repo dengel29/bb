@@ -61,7 +61,13 @@ export const ProfilePage = (): JSX.Element => {
           <h1>It's my life |</h1>
           <h2>don't u forget</h2>
         </div>
-        <LocationGrabber />
+
+        <LocationGrabber
+          location={{
+            city: currentUser?.city,
+            country: currentUser?.country,
+          }}
+        />
       </div>
       <hr />
       <h1>My games</h1>
@@ -72,7 +78,7 @@ export const ProfilePage = (): JSX.Element => {
             new Date(game.createdAt)
           );
           return (
-            <div>
+            <div key={game.id}>
               <Link to={`/play/${game.id}`}>
                 {game.name} | Created {String(d)} days {String(h)} hours ago by
                 {": "}

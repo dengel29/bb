@@ -113,7 +113,27 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser(async function (user: User, done) {
-  const foundUser = await prisma.user.findFirst({ where: { id: user.id } });
+  const foundUser = await prisma.user.findFirst({
+    where: { id: user.id },
+    select: {
+      id: true,
+      email: true,
+      country: {
+        select: {
+          id: true,
+          name: true,
+          localName: true,
+        },
+      },
+      city: {
+        select: {
+          id: true,
+          name: true,
+          localName: true,
+        },
+      },
+    },
+  });
   if (foundUser) {
     done(null, foundUser);
   } else {
@@ -161,61 +181,70 @@ async function getCountryFromCoordinates({
   lat: number;
   long: number;
 }) {
-  // get XML location data from lat-long
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${long}`
-  );
-  const data = await res.text();
+  try {
+    console.log("latlong");
+    console.log(lat);
+    console.log(long);
+    // get XML location data from lat-long
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${long}`
+    );
+    const data = await res.text();
 
-  // convert XML to JSON
-  const geoJson = convertXML(data);
+    // convert XML to JSON
+    const geoJson = convertXML(data);
 
-  // pull out country and city data from information from JSON
-  const [{ result }, { addressparts }] = geoJson.reversegeocode.children;
-  const address: {
-    house_number: string;
-    road: string;
-    neighbourhood: string;
-    suburb: string;
-    village: string;
-    city: string;
-    "ISO3166-2-lvl4": string;
-    postcode: string;
-    country: string;
-    country_code: string;
-  } = {};
-  // address object will looks like this:
-  // {
-  //   house_number: '12號',
-  //   road: '南京東路五段',
-  //   neighbourhood: '吉祥里',
-  //   suburb: '松山區',
-  //   village: '中崙',
-  //   city: '臺北市',
-  //   'ISO3166-2-lvl4': 'TW-TPE',
-  //   postcode: '105',
-  //   country: '臺灣',
-  //   country_code: 'tw'
-  // }
-  addressparts.children.forEach((item) => {
-    const key = Object.keys(item)[0];
-    address[key] = item[key].content;
-  });
-  const countryLocalName = address.country;
-  const cityLocalName = address.city;
-  const { name: cityName, countryName } = iso31662.subdivision(
-    address["ISO3166-2-lvl4"]
-  );
+    // pull out country and city data from information from JSON
+    if (!geoJson.reversegeocode.children) {
+      throw new Error("The location API call to OSM failed, please try again");
+    }
+    const [{ result }, { addressparts }] = geoJson.reversegeocode.children;
+    const address: {
+      house_number: string;
+      road: string;
+      neighbourhood: string;
+      suburb: string;
+      village: string;
+      city: string;
+      "ISO3166-2-lvl4": string;
+      postcode: string;
+      country: string;
+      country_code: string;
+    } = {};
+    // address object will looks like this:
+    // {
+    //   house_number: '12號',
+    //   road: '南京東路五段',
+    //   neighbourhood: '吉祥里',
+    //   suburb: '松山區',
+    //   village: '中崙',
+    //   city: '臺北市',
+    //   'ISO3166-2-lvl4': 'TW-TPE',
+    //   postcode: '105',
+    //   country: '臺灣',
+    //   country_code: 'tw'
+    // }
+    addressparts.children.forEach((item) => {
+      const key = Object.keys(item)[0];
+      address[key] = item[key].content;
+    });
+    const countryLocalName = address.country;
+    const cityLocalName = address.city;
+    const { name: cityName, countryName } = iso31662.subdivision(
+      address["ISO3166-2-lvl4"]
+    );
 
-  // save countryLocalName, cityLocalName, name (ie cityName) and countryName
-  const cityAndCountry = await createOrUpdateCountryCity({
-    countryLocalName,
-    cityLocalName,
-    cityName,
-    countryName,
-  });
-
-  return cityAndCountry;
+    // save countryLocalName, cityLocalName, name (ie cityName) and countryName
+    const cityAndCountry = await createOrUpdateCountryCity({
+      countryLocalName,
+      cityLocalName,
+      cityName,
+      countryName,
+    });
+    return cityAndCountry;
+  } catch (err) {
+    console.log(err);
+  }
 }
 app.post("/api/coords-to-country", async (req, res) => {
   if (!req.isAuthenticated || !req.user) {
@@ -233,7 +262,8 @@ app.post("/api/coords-to-country", async (req, res) => {
     cityId: result.city.id,
   });
 
-  return result;
+  console.log("result!", result);
+  res.status(200).json(result).send();
 });
 app.post("/api/create-objectives", async (req, res) => {
   // TODO: return error to client if errors
@@ -327,8 +357,18 @@ app.get("/api/rooms/objectives", async (req, res, next) => {
 app.get("/user/me", (req, res, next) => {
   // access to req.isAuthenticated(): boolean
   // access to req.user: {email: string, id: number ...}
+  let country, city;
   if (req.user) {
-    res.status(200).json({ email: req.user.email, id: req.user.id });
+    if (req.user.country) {
+      country = req.user.country;
+      city = req.user.country;
+    }
+    res.status(200).json({
+      email: req.user.email,
+      id: req.user.id,
+      country: country ? { ...country } : null,
+      city: city ? { ...city } : null,
+    });
   } else {
     return res.status(401).send();
   }
