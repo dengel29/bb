@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { CreateObjectiveDTO } from "shared/types";
 import { PageContainer } from "./PageContainer";
+import toast from "react-hot-toast";
 import "./styles/objectives.css";
 
 const ObjectiveInputSet = ({
@@ -108,7 +109,7 @@ export const CreateObjectivesForm = (): JSX.Element => {
         console.log(objectives);
 
         // console.log(formData);
-
+        const toastId = toast.loading("Submitting...");
         const response = await fetch(
           "http://localhost:3000/api/create-objectives",
           {
@@ -123,8 +124,16 @@ export const CreateObjectivesForm = (): JSX.Element => {
         // TODO: show success or error toast here
         // 200 is a success
         // error message should be sent with server response
-        console.log(response.status);
-
+        if (response.ok) {
+          toast.dismiss(toastId);
+          toast.success(`Nice, submission successful`, {
+            position: "bottom-center",
+            duration: 3000,
+          });
+        } else {
+          toast.dismiss(toastId);
+          toast.error("Uh oh, something went wrong");
+        }
         return response;
       }
     } catch (error) {
