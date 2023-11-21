@@ -49,7 +49,6 @@
   margin-bottom: 3%;
   justify-content: space-around;
   padding: 4px;
-  
   & label {
     display: flex;
     align-items: center;
@@ -57,13 +56,12 @@
     flex-direction: column;
     justify-content: center;
     width: 20%
-  };  
-
+  };
   & input[type="number"] {
-    width:15%;
-    min-width: 10px
-  }
-
+    width:100%;
+    min-width: 10px;
+    align-self: center
+  };
   & small {
     width: 100%;
   }
@@ -71,36 +69,35 @@
 
 @media (width <= 768px) {
   .objectives-list__container {
-    .objective-item__container {      
+    & .objective-item__container {     
       margin: 0 auto;
       display: grid;
       grid-template-columns:1fr 1fr;
       grid-template-rows: 1fr 1fr 1fr;
-      label {
+      & label {
         display: flex;
         align-items: initial;
-      }
-      label:first-of-type {
-        input {
-          width: 90vw;
-          text-overflow: wrap;
-        }
-        text-align: center;
-        grid-column: 1 / -1;        
-        min-width: 90vw;
       };
-      label:nth-of-type(2) {
+      & label:first-of-type {
+        width: 100%;
+        margin: initial;
+        text-overflow: wrap;
+        text-align: center;
+        grid-column: 1 / 4;  
+        
+      };
+     & label:nth-of-type(2) {
         grid-area: 3/1;
         /* width: 40% */
       }
-      label:nth-of-type(3) {
+     & label:nth-of-type(3) {
         grid-area: 3/3;
         input {
           margin: 0 auto;
           width: 20%
         }
       }
-      .btn {
+     & .btn {
         margin-left: auto;
         margin-top: 10px;
         width: 30%;
@@ -108,12 +105,12 @@
         width: 50%;
         height: fit-content
       }
-      small {
+     & small {
         display: none;
       } 
     }
-  label {
-    width: 100%
+    & label {
+      width: 100%
+    }
   }
-}
 }

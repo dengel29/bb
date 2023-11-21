@@ -112,10 +112,11 @@ export function HowToPlayPage() {
       <section className="how-to__container">
         <h1>How To Bingo</h1>
         <p>
-          Bingo is played on a 5-by-5 board. Each square in the grid has an
-          objective, something like "Cross a bridge", "Visit 5 churches", "Ride
-          the bus one stop with your bike". The goal is to complete an unbroken
-          line - vertical, horizontal, or diagonal – of 5 squares, like below.
+          Bingo is played on a 5-by-5 board. Each square on the board contains a
+          <strong> task</strong> – something to do around your city – like
+          "Cross a bridge", "Visit 5 churches", "Ride the bus one stop with your
+          bike". The goal is to complete an unbroken line - vertical,
+          horizontal, or diagonal – of 5 squares, like below.
         </p>
 
         <div className="example-boards__container">
@@ -125,21 +126,6 @@ export function HowToPlayPage() {
                 <div
                   className="cell"
                   style={{ "--row": i } as React.CSSProperties}
-                  key={i}
-                ></div>
-              );
-            })}
-          </div>
-          <div className="board grid-25 rows">
-            {Array.from(Array(25).keys()).map((i) => {
-              return (
-                <div
-                  className="cell"
-                  style={
-                    {
-                      "--row": Math.abs((i % 5) - i) / 5 + 1,
-                    } as React.CSSProperties
-                  }
                   key={i}
                 ></div>
               );
@@ -160,13 +146,28 @@ export function HowToPlayPage() {
               );
             })}
           </div>
+          <div className="board grid-25 rows">
+            {Array.from(Array(25).keys()).map((i) => {
+              return (
+                <div
+                  className="cell"
+                  style={
+                    {
+                      "--row": Math.abs((i % 5) - i) / 5 + 1,
+                    } as React.CSSProperties
+                  }
+                  key={i}
+                ></div>
+              );
+            })}
+          </div>
         </div>
 
         <h2>Types of Games</h2>
         <p>
           There are different kinds of squares that you'll encounter on a Bingo
-          board, that may act slightly differently based on what kind of game
-          you're playing.
+          board, that will respond differently based on what kind of game you're
+          playing.
         </p>
         <p>
           There are 3 basic gametypes you can choose when creating a bingo game:
@@ -220,7 +221,7 @@ export function HowToPlayPage() {
             cellId={1}
             countable={false}
             handleClick={(event) => handleTutorialClick(event, "normal")}
-            text={`I'm a normal unclaimed square. \n Click me and I'll change to your color`}
+            text={`I'm a normal unclaimed square. \n Tap me and I'll change to your color`}
             owner={determineOwner(1)}
             sharedStyle={determineOwner(1) === "shared" ? sharedStyle : ""}
           />
@@ -236,8 +237,8 @@ export function HowToPlayPage() {
               it.
             </p>
             <p>
-              If you've made a mistake, click it again to unmark the square.
-              Your opponent will see the squares update in real-time.
+              If you've made a mistake, tap it again to unmark the square. Your
+              opponent will see the squares update in real-time.
             </p>
           </section>
         </div>
@@ -266,10 +267,10 @@ export function HowToPlayPage() {
             <h2>Countable Square</h2>
             <p>Some tasks have 'countable' tasks, like the one here.</p>
             <p>
-              When you click it, a number in the bottom right will increment.
-              This is just for your convenience, your opponent won't see it.
-              When you reach the objective count, you will automatically claim
-              the square.
+              When you tap it, a number in the bottom right will increment. This
+              is just for your convenience, your opponent won't see it. When you
+              reach the objective count, you will automatically claim the
+              square.
             </p>
             <p>Try tapping the square 4 times.</p>
           </section>
