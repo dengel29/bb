@@ -9,14 +9,13 @@ const SignIn = (): JSX.Element => {
   const { currentUser, loading, error } = useCurrentUser();
   const [inputsDisabled, setInputsDisabled] = useState(false);
   const submitEmail = () => {
-    console.log(email.current?.value);
     setInputsDisabled(true);
     setEmailError(false);
     fetch(`http://localhost:3000/auth/magiclogin`, {
       method: `POST`,
       body: JSON.stringify({
         // `destination` is required.
-        destination: email.current?.value,
+        destination: email.current?.value.toLowerCase(),
         // However, you can POST anything in your payload and it will show up in your verify() method
         // name: name,
       }),
