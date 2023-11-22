@@ -87,6 +87,7 @@ model City {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   name      String
+  localName String?
   countryId Int
   country   Country    @relation(fields: [countryId], references: [id])
   districts District[]
@@ -99,7 +100,8 @@ model Country {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  name      String
+  name      String   @unique
+  localName String?  @unique
   cities    City[]
   users     User[]
 

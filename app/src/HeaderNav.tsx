@@ -1,10 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { withHeaderLocations } from "./hooks/useHeader";
 import "./styles/header-nav.css";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 
 export const HeaderNav = (): JSX.Element => {
   const { currentUser, loading, error } = useCurrentUser();
-
+  const { pathname } = useLocation();
   const logOut = async () => {
     await fetch("http://localhost:3000/log-out", {
       method: "POST",
@@ -17,16 +18,44 @@ export const HeaderNav = (): JSX.Element => {
     (loading && !currentUser) || (!loading && error) ? (
       <Link to="/sign-in">Sign In</Link>
     ) : (
-      <button onClick={() => logOut()}>Log Out</button>
+      <button onClick={() => logOut()}>
+        <h3>Log Out</h3>
+      </button>
     );
+
   return (
-    <div className="full-width flex-even-row">
-      <Link to="/">Home</Link>
-      <Link to="/create-objectives">Create objectives</Link>
-      <Link to="/how-to-play">How to play</Link>
-      <Link to="/play">Join a game</Link>
-      <Link to="/profile">Profile</Link>
+    <nav className="full-width flex-even-row row-to-column">
+      <label id="open-nav">
+        •••
+        <input type="checkbox" />
+      </label>
+      {withHeaderLocations.map((location) => {
+        if (location.header) {
+          return (
+            <Link to={location.path} key={location.path}>
+              <h3 className={location.path === pathname ? "active" : ""}>
+                {location.text}
+              </h3>
+            </Link>
+          );
+        }
+      })}
+      {/* <Link to="/">
+        <h3>Home</h3>
+      </Link>
+      <Link to="/create-objectives">
+        <h3>Create objectives</h3>
+      </Link>
+      <Link to="/how-to-play">
+        <h3>How to play</h3>
+      </Link>
+      <Link to="/play">
+        <h3>Join a game</h3>
+      </Link>
+      <Link to="/profile">
+        <h3>Profile</h3>
+      </Link> */}
       {authLink}
-    </div>
+    </nav>
   );
 };

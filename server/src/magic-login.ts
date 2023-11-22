@@ -19,7 +19,7 @@ export const magicLogin = new MagicLoginStrategy({
     await sendEmail({
       to: destination,
       from: "dan@dngl.cc",
-      subject: "Sign In, bb",
+      subject: "Sign In To BingoBike",
       textBody: `Click this link to finish logging in: http://localhost:3000${href}&email=${destination}`,
     });
   },

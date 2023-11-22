@@ -19,7 +19,13 @@ export const RoomList = ({
 
           {rooms &&
             rooms.map((room) => {
-              return <RoomItem room={room} key={room.id} />;
+              return (
+                <RoomItem
+                  room={room}
+                  key={room.id}
+                  players={room.boardPlayers}
+                />
+              );
             })}
         </div>
       )}

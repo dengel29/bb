@@ -2,7 +2,7 @@ import { BoardPlayerCreatedDTO, GetBoardDTO, JoinBoardDTO } from "shared/types";
 import { useState, useRef, FormEvent } from "react";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import "./styles/create-board.css";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
   const { room } = props;
@@ -10,17 +10,21 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
   const navigator = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const roomEntryForm = useRef<HTMLFormElement>(null);
+
   const [requestStatus, setRequestStatus] = useState<{
     error: boolean;
     reason: string;
   } | null>(null);
+
   const [clientError, setClientError] = useState<{
     error: boolean;
     reason: string;
   } | null>(null);
+
   const displayEntryForm = () => {
     setShowForm(!showForm);
   };
+
   async function submitHandler(
     event: FormEvent<HTMLFormElement>
   ): Promise<Response | void> {
@@ -64,11 +68,36 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
       console.log(err);
     }
   }
+
   return (
     <div>
-      <button onClick={displayEntryForm}>
-        <p>{room.name}</p>
-      </button>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          alignContent: "flex-start",
+          justifyContent: "space-between",
+          paddingInline: "5%",
+        }}
+      >
+        <button onClick={displayEntryForm}>
+          <p>{room.name}</p>
+        </button>
+        {currentUser &&
+          room?.boardPlayers &&
+          room?.boardPlayers.map((player) => {
+            if (player.userId === currentUser?.id) {
+              return (
+                <Link to={`/play/${room.id}`}>
+                  <h3>Play!</h3>
+                </Link>
+              );
+            } else {
+              return null;
+            }
+          })}
+      </div>
       {showForm && (
         <form
           action=""

@@ -7,12 +7,22 @@
   /* transition: background-color ease 0.3s; */
 }
 
-h1, h2, h3 {
+h1, h2, h3, nav>button {
   color: var(--green-9);
   margin-block: .15em;
   font-stretch: semi-expanded;
   text-shadow: .1rem .2rem var(--indigo-1);
-}
+  &::selection {
+    text-shadow: initial;
+    color: black;
+    background-color: lightblue;
+  } 
+  &:is(button) {
+    background-color: initial;
+    text-align: initial;
+    padding: initial
+  }
+} 
 
 section {
   margin-inline: 8vw;
@@ -29,8 +39,9 @@ section {
 .how-to__container {
   font-family: var(--font-sans);
   background-image: var(--gradient-9), var(--noise-4);
-  border: 4px solid var(--indigo-7);
-  /* filter: var(--noise-filter-9); */
+  border: 4px solid var(--indigo-4);
+  filter: var(--noise-filter-9);
+  margin: 0 auto;
   padding: var(--size-2);
   min-width: 70%;
   border-radius: var(--border-size-3);

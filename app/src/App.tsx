@@ -8,6 +8,7 @@ import { BoardPage } from "./BoardPage.tsx";
 import { ProfilePage } from "./ProfilePage.tsx";
 import "./index.css";
 import { HowToPlayPage } from "./HowToPlayPage.tsx";
+
 export const App = () => {
   const router = createBrowserRouter([
     {

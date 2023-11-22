@@ -52,6 +52,11 @@ export async function getRecentBoards() {
           username: true,
         },
       },
+      boardPlayers: {
+        select: {
+          userId: true,
+        },
+      },
     },
   });
 
@@ -395,4 +400,80 @@ export async function getBoardObjectives({
 
   const sortedObjectives = objectives.sort(sortByPosition);
   return sortedObjectives;
+}
+
+export async function createOrUpdateCountryCity({
+  cityLocalName,
+  countryLocalName,
+  cityName,
+  countryName,
+}: {
+  cityLocalName: string;
+  countryLocalName: string;
+  cityName: string;
+  countryName: string;
+}) {
+  let country, city;
+  country = await prisma.country.findFirst({
+    where: { name: countryName },
+    select: {
+      id: true,
+      name: true,
+      localName: true,
+    },
+  });
+  if (!country) {
+    country = await prisma.country.create({
+      data: {
+        name: countryName,
+        localName: countryLocalName,
+      },
+      select: {
+        id: true,
+        name: true,
+        localName: true,
+      },
+    });
+  }
+
+  city = await prisma.city.findFirst({
+    where: { name: cityName },
+  });
+
+  if (!city) {
+    city = await prisma.city.create({
+      data: {
+        name: cityName,
+        localName: cityLocalName,
+        countryId: country.id,
+      },
+      select: {
+        id: true,
+        name: true,
+        localName: true,
+      },
+    });
+  }
+
+  return { city, country };
+}
+
+export async function updateUserCountry({
+  userId,
+  countryId,
+  cityId,
+}: {
+  userId: number;
+  countryId: number;
+  cityId: number;
+}) {
+  await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      countryId,
+      cityId,
+    },
+  });
 }

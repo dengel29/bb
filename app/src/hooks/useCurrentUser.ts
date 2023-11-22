@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
 
 export const findMe = async (): Promise<
-  [{ email: string; id: number } | null, boolean, string]
+  [
+    {
+      email: string;
+      id: number;
+      country: { id: number; name: string; localName: string };
+      city: { id: number; name: string; localName: string };
+    } | null,
+    boolean,
+    string
+  ]
 > => {
   let user = null,
     loading = false,
@@ -32,6 +41,8 @@ export const useCurrentUser = () => {
   const [currentUser, setCurrentUser] = useState<{
     email: string;
     id: number;
+    country: { id: number; name: string; localName: string };
+    city: { id: number; name: string; localName: string };
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");

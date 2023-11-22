@@ -1,6 +1,8 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { CreateObjectiveDTO } from "shared/types";
 import { PageContainer } from "./PageContainer";
+import { useCurrentUser } from "./hooks/useCurrentUser";
+import toast from "react-hot-toast";
 import "./styles/objectives.css";
 
 const ObjectiveInputSet = ({
@@ -11,16 +13,26 @@ const ObjectiveInputSet = ({
   removeItem: (itemId: number) => void;
 }): React.ReactElement => {
   const countableCheckboxRef = useRef<HTMLInputElement>(null);
+  const countLimitRef = useRef<HTMLInputElement>(null);
   const firstInput = useRef<HTMLInputElement>(null);
   const [isCountable, setIsCountable] = useState(false);
 
   const updateCountable = () => {
+    const numberMatch = firstInput.current?.value.match(/\d+/);
+    if (
+      numberMatch &&
+      isCountable === false &&
+      firstInput?.current?.value.match(/\d+/)
+    ) {
+      countLimitRef.current.value = numberMatch[0];
+    }
     setIsCountable(!isCountable);
   };
 
   useEffect(() => {
     firstInput.current?.focus();
   }, []);
+
   return (
     <div>
       <div className="objectives-list__container">
@@ -58,6 +70,7 @@ const ObjectiveInputSet = ({
               min={2}
               name={`countLimit${setId}`}
               disabled={!isCountable}
+              ref={countLimitRef}
             />
             <small>How many times a player must execute the task</small>
           </label>
@@ -69,9 +82,7 @@ const ObjectiveInputSet = ({
 };
 
 export const CreateObjectivesForm = (): JSX.Element => {
-  const user = {
-    id: 1,
-  };
+  const { currentUser, loading, error } = useCurrentUser();
   const createObjectivesForm = useRef<HTMLFormElement>(null);
   const [objectiveIds, setObjectiveIds] = useState<Set<number>>(new Set([0]));
 
@@ -86,8 +97,8 @@ export const CreateObjectivesForm = (): JSX.Element => {
   ): Promise<Response | void> {
     try {
       event.preventDefault();
-      if (!createObjectivesForm.current) {
-        throw Error("Form is null");
+      if (!createObjectivesForm.current || !currentUser) {
+        throw Error("Form is null or current user ain't here");
       } else {
         const objectives = [];
         const form = createObjectivesForm.current;
@@ -99,7 +110,7 @@ export const CreateObjectivesForm = (): JSX.Element => {
               form[`countable${i}`].checked && form[`countLimit${i}`].value
                 ? Number(form[`countLimit${i}`].value)
                 : null,
-            creatorId: user.id,
+            creatorId: currentUser.id,
           };
 
           objectives.push(objective);
@@ -108,7 +119,7 @@ export const CreateObjectivesForm = (): JSX.Element => {
         console.log(objectives);
 
         // console.log(formData);
-
+        const toastId = toast.loading("Submitting...");
         const response = await fetch(
           "http://localhost:3000/api/create-objectives",
           {
@@ -123,8 +134,16 @@ export const CreateObjectivesForm = (): JSX.Element => {
         // TODO: show success or error toast here
         // 200 is a success
         // error message should be sent with server response
-        console.log(response.status);
-
+        if (response.ok) {
+          toast.dismiss(toastId);
+          toast.success(`Nice, submission successful`, {
+            position: "bottom-center",
+            duration: 3000,
+          });
+        } else {
+          toast.dismiss(toastId);
+          toast.error("Uh oh, something went wrong");
+        }
         return response;
       }
     } catch (error) {
