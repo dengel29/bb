@@ -1,4 +1,4 @@
-import { Board, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 export type Score = Map<"mine" | "theirs", Set<number>>;
 
@@ -153,6 +153,8 @@ declare global {
     interface User {
       email: string;
       id: number;
+      country: { name: string; id: number; localName: string | null } | null;
+      city: { name: string; id: number; localName: string | null } | null;
     }
   }
 }
@@ -213,7 +215,10 @@ type errorEnum = "unable-to-join";
 
 export type SocketAction = keyof SocketPayload;
 
-export type PossiblePayloads = ObjectValues<typeof SocketPayload>;
+export type PossiblePayloads = ObjectValues<SocketPayload>;
+export type SocketCallback<T extends SocketAction> = (
+  payload: SocketPayload[T]
+) => void;
 // export type PossiblePayloads = SocketPayload[SocketAction];
 
 export type PathPrefixedString = `/${string}`;

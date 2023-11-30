@@ -1,17 +1,19 @@
 {
   "compilerOptions": {
-    "target": "ESNEXT",
+    "target": "ES6",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "outDir": "dist",
+    "esModuleInterop": true, // added for error related to "export module = "
 
     /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
+    // "allowImportingTsExtensions": true,
+    // "resolveJsonModule": true,
+    "moduleResolution": "node",
     "isolatedModules": true,
-    "noEmit": true,
+    "noEmitOnError": false,
 
     /* Linting */
     "strict": true,
@@ -19,6 +21,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
   // "references": [{ "path": "./tsconfig.node.json" }]
 }

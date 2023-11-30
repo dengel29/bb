@@ -1,0 +1,16 @@
+version: "4.25.2"
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:15.1
+    environment:
+      POSTGRES_USER: "bingo_dan"
+      POSTGRES_PASSWORD: "bingo_pw"
+      POSTGRES_DB: "bingo_db"
+      PGDATA: /data/postgres
+    volumes:
+      - ../data/postgres:/data/postgres:cached # c. cached hopefully solves docker desktop running insanely hot
+    ports:
+      - "5432:5432"
+    restart: unless-stopped

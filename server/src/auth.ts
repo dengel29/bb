@@ -32,6 +32,20 @@ export const findOrCreateUserByEmail = async (email: string) => {
       select: {
         id: true,
         email: true,
+        country: {
+          select: {
+            id: true,
+            name: true,
+            localName: true,
+          },
+        },
+        city: {
+          select: {
+            id: true,
+            name: true,
+            localName: true,
+          },
+        },
       },
     });
   } else {

@@ -1,16 +1,13 @@
-import { PossiblePayloads, SocketAction } from "shared/types";
+import { PossiblePayloads, SocketAction, SocketCallback } from "shared/types";
 import { socket } from "./socket";
 
-export function socketEmit(
-  event: SocketAction,
-  payload: PossiblePayloads[SocketAction]
-) {
+export function socketEmit(event: SocketAction, payload: PossiblePayloads) {
   socket.emit(event, payload);
 }
 
 export function socketOn(
   event: SocketAction,
-  callback: (payload: PossiblePayloads) => void
+  callback: SocketCallback<SocketAction>
 ) {
   socket.on(event, callback);
 }

@@ -1,12 +1,11 @@
 import express, { Request } from "express";
 import fetch from "node-fetch";
 import { convertXML } from "simple-xml-to-json";
+// @ts-ignore
 import iso31662 from "iso-3166-2";
-import path from "path";
 import http, { ServerResponse } from "http";
 import cors from "cors";
 import { Server, ServerOptions } from "socket.io";
-import { fileURLToPath } from "url";
 import {
   createBoard,
   bulkCreateObjectives,
@@ -25,26 +24,20 @@ import {
 } from "./room-actions";
 import { magicLogin } from "./magic-login";
 import passport from "passport";
-import { Prisma, PrismaClient, User } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { config } from "../config";
-import {
-  GetBoardPlayerDTO,
-  BoardObjectivesDTO,
-  SocketPayload,
-  SocketAction,
-} from "shared/types";
+import { GetBoardPlayerDTO, SocketPayload } from "shared/types";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 const port = process.env.PORT || 3000;
-const buildPath =
-  process.env.NODE_ENV === "development"
-    ? path.normalize(path.join(__dirname, "../.."))
-    : path.normalize(path.join(__dirname, "../build"));
-const publicPath = path.normalize(path.join(__dirname, "../../public"));
+// const buildPath =
+//   process.env.NODE_ENV === "development"
+//     ? path.normalize(path.join(__dirname, "../.."))
+//     : path.normalize(path.join(__dirname, "../build"));
 const app = express();
 const allowedOrigins = ["http://localhost:5173"];
 
@@ -112,7 +105,7 @@ passport.serializeUser((user, done) => {
   done(null, user);
 });
 
-passport.deserializeUser(async function (user: User, done) {
+passport.deserializeUser(async function (user: Express.User, done) {
   const foundUser = await prisma.user.findFirst({
     where: { id: user.id },
     select: {
@@ -153,23 +146,23 @@ app.post("/api/create-room", async (req, res) => {
     }
     const createdBoard = await createBoard(req.body);
     return res.status(200).json(createdBoard).send();
-  } catch (err) {
+  } catch (err: any) {
     return res.status(500).send(err?.message);
   }
 });
 
-app.get("/api/get-rooms", async (req, res, next) => {
+app.get("/api/get-rooms", async (req, res, _next) => {
   console.log(req?.user);
   try {
     const boards = await getRecentBoards();
     return res.status(200).json(boards);
-  } catch (err) {
+  } catch (err: any) {
     return res.status(500).send(err?.message);
   }
 });
 
-app.post("/api/board-objectives/create", async (req, res) => {
-  const boardObjectives = await createBoardObjectives({
+app.post("/api/board-objectives/create", async (req, _res) => {
+  await createBoardObjectives({
     boardId: req.body.boardId,
   });
 });
@@ -198,8 +191,8 @@ async function getCountryFromCoordinates({
     if (!geoJson.reversegeocode.children) {
       throw new Error("The location API call to OSM failed, please try again");
     }
-    const [{ result }, { addressparts }] = geoJson.reversegeocode.children;
-    const address: {
+    const [_, { addressparts }] = geoJson.reversegeocode.children;
+    type LocationAddress = {
       house_number: string;
       road: string;
       neighbourhood: string;
@@ -210,7 +203,19 @@ async function getCountryFromCoordinates({
       postcode: string;
       country: string;
       country_code: string;
-    } = {};
+    };
+    const address: LocationAddress = {
+      house_number: "",
+      road: "",
+      neighbourhood: "",
+      suburb: "",
+      village: "",
+      city: "",
+      "ISO3166-2-lvl4": "",
+      postcode: "",
+      country: "",
+      country_code: "",
+    };
     // address object will looks like this:
     // {
     //   house_number: '12號',
@@ -224,8 +229,8 @@ async function getCountryFromCoordinates({
     //   country: '臺灣',
     //   country_code: 'tw'
     // }
-    addressparts.children.forEach((item) => {
-      const key = Object.keys(item)[0];
+    addressparts.children.forEach((item: any) => {
+      const key = Object.keys(item)[0] as keyof LocationAddress;
       address[key] = item[key].content;
     });
     const countryLocalName = address.country;
@@ -256,13 +261,16 @@ app.post("/api/coords-to-country", async (req, res) => {
     long: req.body.longitude,
   });
 
-  await updateUserCountry({
-    userId: req.user?.id,
-    countryId: result.country.id,
-    cityId: result.city.id,
-  });
+  if (result) {
+    await updateUserCountry({
+      userId: req.user?.id,
+      countryId: result.country.id,
+      cityId: result.city.id,
+    });
+  } else {
+    console.log("no address coordins", result);
+  }
 
-  console.log("result!", result);
   res.status(200).json(result).send();
 });
 app.post("/api/create-objectives", async (req, res) => {
@@ -283,18 +291,18 @@ app.get(
   })
 );
 
-app.use(express.static(buildPath));
+// app.use(express.static(buildPath));
 
-app.get("/home", (_req, res) => {
-  res.sendFile(path.join(buildPath, "home.html"));
-});
+// app.get("/home", (_req, res) => {
+//   res.sendFile(path.join(buildPath, "home.html"));
+// });
 
-app.get("/", (_req, res) => {
-  // this works
-  // return res.json({ message: "Hello, world!" });
-  // this works too
-  res.sendFile(path.join(__dirname, "index.html"));
-});
+// app.get("/", (_req, res) => {
+//   // this works
+//   // return res.json({ message: "Hello, world!" });
+//   // this works too
+//   res.sendFile(path.join(__dirname, "index.html"));
+// });
 
 app.post("/api/rooms/join", async (req, res) => {
   // get the information over the wire:
@@ -325,12 +333,12 @@ app.post("/api/rooms/join", async (req, res) => {
     // res.setHeader("Access-Control-Allow-Origin", "localhost");
     // res..status(302).location(`http://localhost:5173/play/${boardPlayerWithBoard.board.id}`);
     return res.status(200).json(boardPlayerWithBoard).send();
-  } catch (err) {
+  } catch (err: any) {
     return res.status(500).send(err?.message);
   }
 });
 
-app.get("/api/rooms/players", async (req, res, next) => {
+app.get("/api/rooms/players", async (req, res) => {
   try {
     if (!req.isAuthenticated || !req.user) {
       return res.status(401).send("Unauthorized, please sign in and try again");
@@ -341,7 +349,7 @@ app.get("/api/rooms/players", async (req, res, next) => {
   } catch (err) {}
 });
 
-app.get("/api/rooms/objectives", async (req, res, next) => {
+app.get("/api/rooms/objectives", async (req, res) => {
   try {
     if (!req.isAuthenticated || !req.user) {
       return res.status(401).send("Unauthorized, please sign in and try again");
@@ -354,7 +362,7 @@ app.get("/api/rooms/objectives", async (req, res, next) => {
   }
 });
 
-app.get("/user/me", (req, res, next) => {
+app.get("/user/me", (req, res) => {
   // access to req.isAuthenticated(): boolean
   // access to req.user: {email: string, id: number ...}
   let country, city;
@@ -374,7 +382,7 @@ app.get("/user/me", (req, res, next) => {
   }
 });
 
-app.get("/api/games", async (req, res, next) => {
+app.get("/api/games", async (req, res, _next) => {
   try {
     console.log("api/games", req.query);
     if (!req.isAuthenticated || !req.user) {
