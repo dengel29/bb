@@ -42,23 +42,29 @@ ARG service
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
+COPY . /usr/application
 
-FROM base AS build
+FROM base AS deps
 ARG service
-COPY . .
-WORKDIR /${service}
+WORKDIR /usr/application/${service}
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+
+FROM base as build
+ARG service
+WORKDIR /usr/application/${service}
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-# RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm prisma generate
 RUN pnpm prisma generate
 RUN pnpm run build
 RUN pnpm deploy --filter=${service} --prod /prod/${service}
-# RUN pnpm deploy --filter=app2 --prod /prod/app2
 
-FROM base
+FROM base as server
+COPY --from=deps /usr/application/${service}/node_modules /prod/${service}/node_modules
 COPY --from=build /prod/${service}/dist /prod/${service}
+COPY --from=build /prod/${service}/package.json /prod/${service}
+# COPY --from=build /prod/pnpm-lock.yaml /prod/${service}
 WORKDIR /prod/${service}
-EXPOSE 8000
-CMD [ "pnpm", "start:prod" ]
+EXPOSE 3000
+CMD [ "pnpm", "run", "start:prod" ]
 
 # FROM base AS app2
 # COPY --from=build /prod/app2 /prod/app2
