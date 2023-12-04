@@ -1,6 +1,7 @@
 import express, { Request } from "express";
 import fetch from "node-fetch";
-import { convertXML } from "simple-xml-to-json";
+import pkg from "simple-xml-to-json";
+const { convertXML } = pkg;
 // @ts-ignore
 import iso31662 from "iso-3166-2";
 import http, { ServerResponse } from "http";
@@ -21,14 +22,14 @@ import {
   claimObjective,
   createOrUpdateCountryCity,
   updateUserCountry,
-} from "./room-actions";
-import { magicLogin } from "./magic-login";
+} from "./room-actions.js";
+import { magicLogin } from "./magic-login.js";
 import passport from "passport";
 import { Prisma, PrismaClient } from "@prisma/client";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
-import { config } from "../config";
-import { GetBoardPlayerDTO, SocketPayload } from "shared/types";
+import { config } from "../config.js";
+import { GetBoardPlayerDTO, SocketPayload } from "shared/types.js";
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);

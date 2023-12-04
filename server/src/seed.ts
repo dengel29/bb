@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { objectives } from "./objectives";
+import { objectives } from "./objectives.js";
 const prisma = new PrismaClient();
 
 async function createEntities() {

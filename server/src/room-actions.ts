@@ -7,7 +7,7 @@ import {
   CreateObjectiveDTO,
   GetBoardPlayerDTO,
   MyGamesDTO,
-} from "shared/types";
+} from "shared/types.js";
 
 const prisma = new PrismaClient();
 

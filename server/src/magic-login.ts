@@ -1,10 +1,10 @@
 import passport from "passport";
 import MagicLoginStrategy from "passport-magic-login";
-import { config } from "../config";
-import { sendEmail } from "./email-actions";
-import { findOrCreateUserByEmail } from "./auth";
+import { config } from "../config.js";
+import { sendEmail } from "./email-actions.js";
+import { findOrCreateUserByEmail } from "./auth.js";
 
-export const magicLogin = new MagicLoginStrategy({
+export const magicLogin = new MagicLoginStrategy.default({
   // Used to encrypt the authentication token. Needs to be long, unique and (duh) secret.
   secret: config.dev.jwtSecret,
 
@@ -30,7 +30,7 @@ export const magicLogin = new MagicLoginStrategy({
   // "payload" contains { "destination": "email" }
   // In standard passport fashion, call callback with the error as the first argument (if there was one)
   // and the user data as the second argument!
-  verify: (payload, callback) => {
+  verify: (payload: any, callback: (err: any, user?: Express.User) => void) => {
     // Get or create a user with the provided email from the database
     findOrCreateUserByEmail(payload.destination)
       .then((user) => {

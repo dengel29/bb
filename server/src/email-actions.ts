@@ -1,5 +1,5 @@
 import { ServerClient } from "postmark";
-import { config } from "../config";
+import { config } from "../config.js";
 
 export const sendEmail = async ({
   from,
