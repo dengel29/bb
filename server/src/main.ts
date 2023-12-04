@@ -28,9 +28,10 @@ import passport from "passport";
 import { Prisma, PrismaClient } from "@prisma/client";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
-import { config } from "../config.js";
 import { GetBoardPlayerDTO, SocketPayload } from "shared/types.js";
+import { loadConfig } from "../load-config.js";
 
+const config = loadConfig();
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
 
@@ -88,12 +89,12 @@ app.use(
       httpOnly: true,
       sameSite: true,
     },
-    secret: config.dev.sessionSecret,
+    secret: config[`${process.env.NODE_ENV}_SESSION_SECRET`],
     name: "bingoToken",
     resave: false,
     saveUninitialized: false,
     store: new pgSession({
-      conString: config.dev.db,
+      conString: config[`${process.env.NODE_ENV}_DB_ADDRESS`],
       tableName: "sessions",
     }),
   })

@@ -1,12 +1,14 @@
 import passport from "passport";
 import MagicLoginStrategy from "passport-magic-login";
-import { config } from "../config.js";
 import { sendEmail } from "./email-actions.js";
 import { findOrCreateUserByEmail } from "./auth.js";
+import { loadConfig } from "../load-config.js";
+
+const config = loadConfig();
 
 export const magicLogin = new MagicLoginStrategy.default({
   // Used to encrypt the authentication token. Needs to be long, unique and (duh) secret.
-  secret: config.dev.jwtSecret,
+  secret: config[`${process.env.NODE_ENV}_JWT_SECRET`],
 
   // The authentication callback URL
   callbackUrl: "/auth/magiclogin/callback",
