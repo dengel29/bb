@@ -306,6 +306,10 @@ app.get(
 //   res.sendFile(path.join(__dirname, "index.html"));
 // });
 
+app.get("/api/ping", (_req, res) => {
+  return res.json({ message: "pong" });
+});
+
 app.post("/api/rooms/join", async (req, res) => {
   // get the information over the wire:
   // - id of board to be joined
