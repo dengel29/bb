@@ -22,7 +22,8 @@ const ObjectiveInputSet = ({
     if (
       numberMatch &&
       isCountable === false &&
-      firstInput?.current?.value.match(/\d+/)
+      firstInput?.current?.value.match(/\d+/) &&
+      countLimitRef.current
     ) {
       countLimitRef.current.value = numberMatch[0];
     }
@@ -82,7 +83,7 @@ const ObjectiveInputSet = ({
 };
 
 export const CreateObjectivesForm = (): JSX.Element => {
-  const { currentUser, loading, error } = useCurrentUser();
+  const { currentUser } = useCurrentUser();
   const createObjectivesForm = useRef<HTMLFormElement>(null);
   const [objectiveIds, setObjectiveIds] = useState<Set<number>>(new Set([0]));
 

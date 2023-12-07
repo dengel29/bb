@@ -28,18 +28,26 @@ export const ProfilePage = (): JSX.Element => {
         setMyGames(games);
       });
     }
-  }, [currentUser, loading]);
+  }, [currentUser, loading, domain]);
 
-  function dateDiff(
+  function isDiffNan(earlierDate: Date, laterDate: Date): boolean {
+    const diff = earlierDate.valueOf() - laterDate.valueOf();
+    return isNaN(diff);
+  }
+
+  function formatDateDiff(
     earlierDate: Date,
     laterDate: Date
-  ):
-    | { diff: number; ms: number; s: number; m: number; h: number; d: number }
-    | false {
+  ): {
+    diff: number;
+    ms: number;
+    s: number;
+    m: number;
+    h: number;
+    d: number;
+  } {
     const diff = earlierDate.valueOf() - laterDate.valueOf();
-    return isNaN(diff)
-      ? false
-      : {
+    return {
           diff: diff,
           ms: Math.floor(diff % 1000),
           s: Math.floor((diff / 1000) % 60),
@@ -64,8 +72,8 @@ export const ProfilePage = (): JSX.Element => {
 
         <LocationGrabber
           location={{
-            city: currentUser?.city,
-            country: currentUser?.country,
+            city: currentUser?.city || null,
+            country: currentUser?.country || null,
           }}
         />
       </div>
@@ -73,10 +81,12 @@ export const ProfilePage = (): JSX.Element => {
       <h1>My games</h1>
       {currentUser &&
         myGames.map((game) => {
-          const { diff, ms, s, m, h, d } = dateDiff(
-            new Date(),
-            new Date(game.createdAt)
-          );
+          const badDate = isDiffNan(new Date(), new Date(game.createdAt));
+          if (badDate) {
+            return;
+          }
+          const { h, d } = formatDateDiff(new Date(), new Date(game.createdAt));
+
           return (
             <div key={game.id}>
               <Link to={`/play/${game.id}`}>
