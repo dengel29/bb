@@ -9,6 +9,20 @@ export type BroadcastClickArgs = {
   eventType: "unclaim" | "claim";
 };
 
+export interface SuccessResponse<T> extends Response {
+  success: true;
+  data: T;
+}
+
+export interface FailureResponse extends Response {
+  success: false;
+  data: {
+    error: string;
+  };
+}
+
+export type ServerResponse<T> = SuccessResponse<T> | FailureResponse;
+
 // This is Prisma's recommended solution for creating type variations based on db models
 // @see https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety/operating-against-partial-structures-of-model-types#problem-using-variations-of-the-generated-model-type
 const BoardDTO = Prisma.validator<Prisma.BoardDefaultArgs>()({
@@ -208,6 +222,7 @@ export type SocketPayload = {
     message: string;
     errorType: errorEnum;
     redirectPath: PathPrefixedString;
+    suggestion: string;
   };
 };
 

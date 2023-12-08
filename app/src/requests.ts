@@ -1,12 +1,25 @@
-import { PathPrefixedString } from "shared/types";
+import {
+  PathPrefixedString,
+  SuccessResponse,
+  FailureResponse,
+  ServerResponse,
+} from "shared/types";
+const domain =
+  process.env.NODE_ENV === "PROD"
+    ? "https://bingo-server-gylc.onrender.com"
+    : "http://localhost:3000";
 
-const domain = "http://localhost:3000";
+export function isSuccessResponse<T>(
+  res: SuccessResponse<T> | FailureResponse
+): res is SuccessResponse<T> {
+  return res.success;
+}
 
 export async function get<T>(
   path: PathPrefixedString,
   authenticated: boolean,
   options?: RequestInit
-): Promise<T | string> {
+): Promise<ServerResponse<T>> {
   const defaultOptions: RequestInit = {
     method: "GET",
     credentials: "include",
@@ -26,11 +39,15 @@ export async function get<T>(
   if (!authenticated) delete defaultOptions["credentials"];
 
   const response = await fetch(`${domain}${path}`, opts);
-  if (response.ok) {
-    return await response.json();
-  } else {
-    return response.statusText;
-  }
+
+  const result: ServerResponse<T> = await response.json();
+
+  return result;
+  // if (isSuccessResponse(result)) {
+  //   return result.data;
+  // } else {
+  //   return response.statusText;
+  // }
 }
 
 export async function post<T>(
