@@ -131,12 +131,11 @@ export const BoardPage = () => {
     socketEmit("game:started", payload);
   };
 
-  socketOn("objectives:created", () => {
+  socketOn<"objectives:created">("objectives:created", () => {
     refetchObjectives();
   });
 
-  socketOn("error", (payload: SocketPayload["error"]) => {
-    console.log(payload.message);
+  socketOn<"error">("error", (payload) => {
     setError(payload);
   });
 
@@ -193,9 +192,9 @@ export const BoardPage = () => {
     refetchPlayers();
   });
 
-  socketOn("player:left", (payload: SocketPayload["player:left"]) => {
-    const { socketId } = payload;
-    console.log(`${players?.get(socketId)?.user} has left the room`);
+  socketOn<"player:left">("player:left", (/**payload*/) => {
+    // const { socketId } = payload;
+    // console.log(`${players?.get(socketId)?.user} has left the room`);
     if (!players) {
       return;
     }
@@ -206,9 +205,7 @@ export const BoardPage = () => {
     // grey out the name or color or add other indicator
   });
 
-  socketOn(
-    "player:waiting",
-    async (payload: SocketPayload["player:waiting"]) => {
+  socketOn<"player:waiting">("player:waiting", async (payload) => {
       // if (!players) return;
       await refetchPlayers();
       if (!players) return;
@@ -242,7 +239,7 @@ export const BoardPage = () => {
     }
   );
 
-  socketOn("cell:toggled", (payload: SocketPayload["cell:toggled"]) => {
+  socketOn<"cell:toggled">("cell:toggled", (payload) => {
     const { userId, cellId, eventType } = payload;
     const newMessages = [...messages];
     newMessages.push({
@@ -381,16 +378,12 @@ export const BoardPage = () => {
     <>
       {socketError && (
         <div>
-          <h3>
-            Sorry, you have to enter this board with a password to play this
-            board.
-          </h3>
-          Go back to{" "}
-          <Link to={`${socketError.redirectPath}`}>the play page</Link>, find
-          your game, and enter the password
+          <h3>{socketError.message}</h3>
+          Go back to <Link to={`${socketError.redirectPath}`}>this page</Link>,
+          and {socketError.suggestion}
         </div>
       )}
-      {!socketError && (
+      {!socketError && !(players instanceof Error) && (
         <Container size="2">
           {currentUser && <p>Me: {currentUser.email}</p>}
           {players && currentUser && (

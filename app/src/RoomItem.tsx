@@ -4,6 +4,11 @@ import { useCurrentUser } from "./hooks/useCurrentUser";
 import "./styles/create-board.css";
 import { Link, useNavigate } from "react-router-dom";
 
+const domain =
+  process.env.NODE_ENV === "PROD"
+    ? "https://bingo-server-gylc.onrender.com"
+    : "http://localhost:3000";
+
 export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
   const { room } = props;
   const { currentUser } = useCurrentUser();
@@ -43,7 +48,7 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
           password: roomEntryForm.current.password.value,
           boardId: room.id,
         };
-        const response = await fetch("http://localhost:3000/api/rooms/join", {
+        const response = await fetch(`${domain}/api/rooms/join`, {
           method: "POST",
           body: JSON.stringify(formData),
           credentials: "include",
@@ -89,7 +94,7 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
           room?.boardPlayers.map((player) => {
             if (player.userId === currentUser?.id) {
               return (
-                <Link to={`/play/${room.id}`}>
+                <Link to={`/play/${room.id}`} key={room.id}>
                   <h3>Play!</h3>
                 </Link>
               );

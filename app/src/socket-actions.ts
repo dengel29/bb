@@ -5,9 +5,9 @@ export function socketEmit(event: SocketAction, payload: PossiblePayloads) {
   socket.emit(event, payload);
 }
 
-export function socketOn(
+export function socketOn<T extends SocketAction>(
   event: SocketAction,
-  callback: SocketCallback<SocketAction>
+  callback: SocketCallback<T>
 ) {
   socket.on(event, callback);
 }
