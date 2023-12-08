@@ -5,13 +5,17 @@ import { LocationGrabber } from "./LocationGrabber";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { Link } from "react-router-dom";
 export const ProfilePage = (): JSX.Element => {
-  const { currentUser, loading, error } = useCurrentUser();
+  const domain =
+    process.env.NODE_ENV === "PROD"
+      ? "https://bingo-server-gylc.onrender.com"
+      : "http://localhost:3000";
+  const { currentUser, loading } = useCurrentUser();
   const [myGames, setMyGames] = useState<MyGamesDTO[]>([]);
 
   useEffect(() => {
     const getMyGames = async (): Promise<MyGamesDTO[]> => {
       const response = await fetch(
-        `http://localhost:3000/api/games?userId=${currentUser?.id}`,
+        `${domain}/api/games?userId=${currentUser?.id}`,
         {
           method: "GET",
           credentials: "include",
@@ -21,7 +25,8 @@ export const ProfilePage = (): JSX.Element => {
           },
         }
       );
-      return await response.json();
+      const { data } = await response.json();
+      return data;
     };
     if (currentUser?.id && !loading) {
       getMyGames().then((games: MyGamesDTO[]) => {
@@ -48,13 +53,13 @@ export const ProfilePage = (): JSX.Element => {
   } {
     const diff = earlierDate.valueOf() - laterDate.valueOf();
     return {
-          diff: diff,
-          ms: Math.floor(diff % 1000),
-          s: Math.floor((diff / 1000) % 60),
-          m: Math.floor((diff / 60000) % 60),
-          h: Math.floor((diff / 3600000) % 24),
-          d: Math.floor(diff / 86400000),
-        };
+      diff: diff,
+      ms: Math.floor(diff % 1000),
+      s: Math.floor((diff / 1000) % 60),
+      m: Math.floor((diff / 60000) % 60),
+      h: Math.floor((diff / 3600000) % 24),
+      d: Math.floor(diff / 86400000),
+    };
   }
   return (
     <PageContainer title={"Profile"}>
@@ -80,6 +85,7 @@ export const ProfilePage = (): JSX.Element => {
       <hr />
       <h1>My games</h1>
       {currentUser &&
+        myGames &&
         myGames.map((game) => {
           const badDate = isDiffNan(new Date(), new Date(game.createdAt));
           if (badDate) {

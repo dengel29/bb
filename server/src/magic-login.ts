@@ -2,13 +2,16 @@ import passport from "passport";
 import MagicLoginStrategy from "passport-magic-login";
 import { sendEmail } from "./email-actions.js";
 import { findOrCreateUserByEmail } from "./auth.js";
-import { loadConfig } from "../load-config.js";
+import { appConfig } from "../config/index.js";
 
-const config = loadConfig();
+// const domain =
+//   process.env.NODE_ENV === "PROD"
+//     ? "https://bingo-server-gylc.onrender.com"
+//     : "http://localhost:3000";
 
 export const magicLogin = new MagicLoginStrategy.default({
   // Used to encrypt the authentication token. Needs to be long, unique and (duh) secret.
-  secret: config[`${process.env.NODE_ENV}_JWT_SECRET`],
+  secret: appConfig.JWT_SECRET,
 
   // The authentication callback URL
   callbackUrl: "/auth/magiclogin/callback",
@@ -22,7 +25,7 @@ export const magicLogin = new MagicLoginStrategy.default({
       to: destination,
       from: "dan@dngl.cc",
       subject: "Sign In To BingoBike",
-      textBody: `Click this link to finish logging in: http://localhost:3000${href}&email=${destination}`,
+      textBody: `Click this link to finish logging in: ${appConfig.domain}${href}&email=${destination}`,
     });
   },
 
