@@ -29,11 +29,14 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { GetBoardPlayerDTO, SocketPayload } from "shared/types.js";
-import { loadConfig } from "../load-config.js";
+// import { loadConfig, env } from "../config/load-config.js";
+import { appConfig } from "../config/index.js";
 
-const config = loadConfig();
+// const config = await loadConfig();
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
+
+const client = process.env.NODE_ENV === "PROD" ? "" : "http://localhost:5173";
 
 const port = process.env.PORT || 3000;
 // const buildPath =
@@ -89,12 +92,12 @@ app.use(
       httpOnly: true,
       sameSite: true,
     },
-    secret: config[`${process.env.NODE_ENV}_SESSION_SECRET`],
+    secret: appConfig.SESSION_SECRET,
     name: "bingoToken",
     resave: false,
     saveUninitialized: false,
     store: new pgSession({
-      conString: config[`${process.env.NODE_ENV}_DB_ADDRESS`],
+      conString: appConfig.DB_ADDRESS,
       tableName: "sessions",
     }),
   })
@@ -137,19 +140,27 @@ passport.deserializeUser(async function (user: Express.User, done) {
 });
 
 app.get("/api/v1/hello", (_req, res) => {
-  return res.json({ message: "Hello, world!" });
+  return res.json({ success: true, data: { message: "Hello, world!" } });
 });
 
 app.post("/api/create-room", async (req, res) => {
   // TODO: user req.user instead of using useCurrentUser hook on client
   try {
     if (!req.isAuthenticated) {
-      return res.status(401).send("Unauthorized, please sign in and try again");
+      return res.status(401).json({
+        success: false,
+        data: { error: "Unauthorized, please sign in and try again" },
+      });
     }
     const createdBoard = await createBoard(req.body);
-    return res.status(200).json(createdBoard).send();
+    return res
+      .status(201)
+      .json({ success: true, data: { createdBoard } })
+      .send();
   } catch (err: any) {
-    return res.status(500).send(err?.message);
+    return res
+      .status(500)
+      .json({ success: false, data: { error: err?.message } });
   }
 });
 
@@ -157,16 +168,30 @@ app.get("/api/get-rooms", async (req, res, _next) => {
   console.log(req?.user);
   try {
     const boards = await getRecentBoards();
-    return res.status(200).json(boards);
+    return res.status(200).json({ success: true, data: boards });
   } catch (err: any) {
-    return res.status(500).send(err?.message);
+    return res
+      .status(500)
+      .json({ success: false, data: { error: err?.message } });
   }
 });
 
-app.post("/api/board-objectives/create", async (req, _res) => {
-  await createBoardObjectives({
-    boardId: req.body.boardId,
-  });
+app.post("/api/board-objectives/create", async (req, res) => {
+  try {
+    // should return the location that these resources can be found
+    await createBoardObjectives({
+      boardId: req.body.boardId,
+    });
+    res.status(201).json({
+      success: true,
+      data: { boardLocation: `${client}/play/${req.body.boardId}` },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      data: { error: "Something went wrong, please try again in a moment." },
+    });
+  }
 });
 
 async function getCountryFromCoordinates({
@@ -273,12 +298,12 @@ app.post("/api/coords-to-country", async (req, res) => {
     console.log("no address coordins", result);
   }
 
-  res.status(200).json(result).send();
+  res.status(201).json({ success: true, data: result });
 });
 app.post("/api/create-objectives", async (req, res) => {
   // TODO: return error to client if errors
   const createdObjectives = await bulkCreateObjectives(req.body);
-  res.status(200).json(createdObjectives);
+  res.status(201).json({ success: true, data: createdObjectives });
 });
 
 // magicLogin.send maps to the sendEmail option
@@ -307,7 +332,7 @@ app.get(
 // });
 
 app.get("/api/ping", (_req, res) => {
-  return res.json({ message: "pong" });
+  return res.json({ success: true, data: { message: "pong" } });
 });
 
 app.post("/api/rooms/join", async (req, res) => {
@@ -317,7 +342,10 @@ app.post("/api/rooms/join", async (req, res) => {
   // - route should be authenticated so user is already in request
   try {
     if (!req.isAuthenticated || !req.user) {
-      return res.status(401).send("Unauthorized, please sign in and try again");
+      return res.status(401).send({
+        success: false,
+        data: { error: "Unauthorized, please sign in and try again" },
+      });
     }
     const { body, user } = req;
     const { password, boardId } = body;
@@ -328,7 +356,10 @@ app.post("/api/rooms/join", async (req, res) => {
         userId: user.id,
       });
 
-    if (!passwordMatch) return res.status(401).send("Password doesn't match");
+    if (!passwordMatch)
+      return res
+        .status(401)
+        .send({ success: false, data: { error: "Password doesn't match" } });
 
     const boardPlayerWithBoard = await addUserToBoard({
       boardId: joiningBoardId,
@@ -338,7 +369,7 @@ app.post("/api/rooms/join", async (req, res) => {
     // tried to do a server side redirect but kept getting access-control-allow-origin related errors
     // res.setHeader("Access-Control-Allow-Origin", "localhost");
     // res..status(302).location(`http://localhost:5173/play/${boardPlayerWithBoard.board.id}`);
-    return res.status(200).json(boardPlayerWithBoard).send();
+    return res.status(200).json({ success: true, data: boardPlayerWithBoard });
   } catch (err: any) {
     return res.status(500).send(err?.message);
   }
@@ -347,57 +378,90 @@ app.post("/api/rooms/join", async (req, res) => {
 app.get("/api/rooms/players", async (req, res) => {
   try {
     if (!req.isAuthenticated || !req.user) {
-      return res.status(401).send("Unauthorized, please sign in and try again");
+      return res.status(401).send({
+        success: false,
+        data: { error: "Unauthorized, please sign in and try again" },
+      });
     }
     const boardId = req.query.board as string;
     const boardPlayers = await getBoardPlayers({ boardId });
-    return res.status(201).json(boardPlayers);
-  } catch (err) {}
+    return res.status(201).json({ success: true, data: boardPlayers });
+  } catch (err) {
+    return res.status(501).send({
+      success: false,
+      data: { error: "Server error, try again in a moment" },
+    });
+  }
 });
 
 app.get("/api/rooms/objectives", async (req, res) => {
   try {
     if (!req.isAuthenticated || !req.user) {
-      return res.status(401).send("Unauthorized, please sign in and try again");
+      return res.status(401).send({
+        success: false,
+        data: { error: "Unauthorized, please sign in and try again" },
+      });
     }
     const boardId = req.query.board as string;
     const objectives = await getBoardObjectives({ boardId });
-    return res.status(201).json(objectives);
+    return res.status(201).json({ success: true, data: objectives });
   } catch (err) {
-    console.log(err);
+    return res.status(501).send({
+      success: false,
+      data: { error: "Server error, try again in a moment" },
+    });
   }
 });
 
 app.get("/user/me", (req, res) => {
   // access to req.isAuthenticated(): boolean
   // access to req.user: {email: string, id: number ...}
-  let country, city;
-  if (req.user) {
+  try {
+    if (!req.isAuthenticated || !req.user) {
+      return res.status(401).send({
+        success: false,
+        data: { error: "Unauthorized, please sign in and try again" },
+      });
+    }
+    let country, city;
     if (req.user.country) {
       country = req.user.country;
       city = req.user.country;
     }
     res.status(200).json({
-      email: req.user.email,
-      id: req.user.id,
-      country: country ? { ...country } : null,
-      city: city ? { ...city } : null,
+      success: true,
+      data: {
+        email: req.user.email,
+        id: req.user.id,
+        country: country ? { ...country } : null,
+        city: city ? { ...city } : null,
+      },
     });
-  } else {
-    return res.status(401).send();
+  } catch (err) {
+    return res.status(501).send({
+      success: false,
+      data: { error: "Server error, try again in a moment" },
+    });
   }
 });
 
 app.get("/api/games", async (req, res, _next) => {
   try {
-    console.log("api/games", req.query);
     if (!req.isAuthenticated || !req.user) {
-      return res.status(401).send("Unauthorized, please sign in and try again");
+      return res.status(401).send({
+        success: false,
+        data: { error: "Unauthorized, please sign in and try again" },
+      });
     }
     const userId = Number(req.query.userId);
     const myGames = await getMyGames({ userId });
-    return res.status(201).json(myGames);
-  } catch (err) {}
+    return res.status(201).json({ success: true, data: myGames });
+  } catch (err) {
+    return res.status(501).json({
+      success: false,
+      data: { error: "Server error, please try again" },
+    });
+  }
 });
 
 app.post("/log-out", (req, res, next) => {
@@ -411,17 +475,17 @@ app.post("/log-out", (req, res, next) => {
       sameSite: true,
       httpOnly: true,
     });
-    return res.status(200).send();
+    return res.status(205).send();
   });
 });
 
 io.on("connection", (socket) => {
   // initial message to connector
-  io.to(socket.id).emit("new_message", {
-    id: "999",
-    msg: "You are connected, your Id is " + socket.id,
-  });
-  console.log("a user connected, id: ", socket.id);
+  // io.to(socket.id).emit("new_message", {
+  //   id: "999",
+  //   msg: "You are connected, your Id is " + socket.id,
+  // });
+  // console.log("a user connected, id: ", socket.id);
 
   socket.on("cell:clicked", async (payload: SocketPayload["cell:toggled"]) => {
     const { boardId, userId, objectiveId, eventType } = payload;
@@ -500,9 +564,18 @@ io.on("connection", (socket) => {
   socket.on("game:started", (payload: SocketPayload["game:started"]) => {
     const { boardId } = payload;
     createBoardObjectives({ boardId }).then((boardObjectives) => {
-      io.sockets
-        .in(`board-${boardId}`)
-        .emit("objectives:created", boardObjectives);
+      if (boardObjectives instanceof Error) {
+        io.sockets.in(`board-${boardId}`).emit("error", {
+          message: "There arent enough objectives for your city yet.",
+          errorType: "objective-amount",
+          redirectPath: "/create-objectives",
+          suggestion: "create some more objectives",
+        });
+      } else {
+        io.sockets
+          .in(`board-${boardId}`)
+          .emit("objectives:created", boardObjectives);
+      }
     });
   });
 
