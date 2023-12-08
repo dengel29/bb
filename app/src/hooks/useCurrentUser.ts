@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 const domain =
-  process.env.NODE_ENV === "PROD"
+  process.env.APP_ENV === "prod"
     ? "https://bingo-server-gylc.onrender.com"
     : "http://localhost:3000";
 export const findMe = async (): Promise<

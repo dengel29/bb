@@ -4,11 +4,6 @@ import { sendEmail } from "./email-actions.js";
 import { findOrCreateUserByEmail } from "./auth.js";
 import { appConfig } from "../config/index.js";
 
-// const domain =
-//   process.env.NODE_ENV === "PROD"
-//     ? "https://bingo-server-gylc.onrender.com"
-//     : "http://localhost:3000";
-
 export const magicLogin = new MagicLoginStrategy.default({
   // Used to encrypt the authentication token. Needs to be long, unique and (duh) secret.
   secret: appConfig.JWT_SECRET,

@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import "./styles/objectives.css";
 
 const domain =
-  process.env.NODE_ENV === "PROD"
+  process.env.APP_ENV === "prod"
     ? "https://bingo-server-gylc.onrender.com"
     : "http://localhost:3000";
 
