@@ -6,9 +6,10 @@ import { useCurrentUser } from "./hooks/useCurrentUser";
 import { Link } from "react-router-dom";
 export const ProfilePage = (): JSX.Element => {
   const domain =
-    process.env.NODE_ENV === "PROD"
+    process.env.APP_ENV === "prod"
       ? "https://bingo-server-gylc.onrender.com"
       : "http://localhost:3000";
+
   const { currentUser, loading } = useCurrentUser();
   const [myGames, setMyGames] = useState<MyGamesDTO[]>([]);
 

@@ -5,7 +5,7 @@ import { useCurrentUser } from "./hooks/useCurrentUser";
 import { QueryObserverResult } from "@tanstack/react-query";
 
 const domain =
-  process.env.NODE_ENV === "PROD"
+  process.env.APP_ENV === "prod"
     ? "https://bingo-server-gylc.onrender.com"
     : "http://localhost:3000";
 

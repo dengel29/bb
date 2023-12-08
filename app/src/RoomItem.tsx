@@ -5,7 +5,7 @@ import "./styles/create-board.css";
 import { Link, useNavigate } from "react-router-dom";
 
 const domain =
-  process.env.NODE_ENV === "PROD"
+  process.env.APP_ENV === "prod"
     ? "https://bingo-server-gylc.onrender.com"
     : "http://localhost:3000";
 
