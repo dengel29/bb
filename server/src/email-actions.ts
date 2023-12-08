@@ -1,5 +1,5 @@
 import { ServerClient } from "postmark";
-import { config } from "../config";
+import { appConfig } from "../config/index.js";
 
 export const sendEmail = async ({
   from,
@@ -14,7 +14,7 @@ export const sendEmail = async ({
   textBody?: string;
   htmlBody?: string;
 }) => {
-  const mailer = new ServerClient(config.dev.postmarkApiToken);
+  const mailer = new ServerClient(appConfig.POSTMARK_API_TOKEN);
 
   await mailer.sendEmail({
     From: from,

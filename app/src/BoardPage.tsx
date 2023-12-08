@@ -16,7 +16,7 @@ import { useCurrentUser } from "./hooks/useCurrentUser";
 import { StartButton } from "./StartButton";
 import { CirclePicker } from "react-color";
 import { socketEmit, socketOn } from "./socket-actions";
-import { get } from "./requests";
+import { get, isSuccessResponse } from "./requests";
 import { Link } from "react-router-dom";
 
 export const BoardPage = () => {
@@ -28,7 +28,7 @@ export const BoardPage = () => {
     ["theirs", new Set()],
   ]);
   const [selectedColor, setSelectedColor] = useState<string>("white");
-  const [myColor, setMyColor] = useState<string | null>(null);
+  const [, setMyColor] = useState<string | null>(null);
   const [gameColors, setGameColors] = useState<{
     mine: string | null;
     theirs: string | null;
@@ -58,12 +58,16 @@ export const BoardPage = () => {
   // useQuery({queryKey: ['players'], })
 
   const boardId = window.location.pathname.split("/")[2];
-  const getObjectives = async (): Promise<BoardObjectivesDTO[]> => {
+  const getObjectives = async (): Promise<BoardObjectivesDTO[] | Error> => {
     const response = await get<BoardObjectivesDTO[]>(
       `/api/rooms/objectives?board=${boardId}`,
       true
     );
-    return response;
+    if (isSuccessResponse(response)) {
+      return response.data;
+    } else {
+      throw new Error(response.data.error);
+    }
   };
 
   const {
@@ -75,16 +79,24 @@ export const BoardPage = () => {
     queryFn: getObjectives,
   });
 
-  const getPlayers = async (): Promise<PlayerMap> => {
+  const getPlayers = async (): Promise<PlayerMap | undefined> => {
     const boardId = window.location.pathname.split("/")[2];
     const response = await get<GetBoardPlayerDTO[]>(
       `/api/rooms/players?board=${boardId}`,
       true
     );
-    const playersMap: PlayerMap = new Map(
-      response.map((player) => [player.socketId!, player])
-    );
-    return playersMap;
+
+    if (isSuccessResponse(response)) {
+      const playersMap: PlayerMap = new Map(
+        response.data.map((player: GetBoardPlayerDTO) => [
+          player.socketId!,
+          player,
+        ])
+      );
+      return playersMap;
+    } else {
+      return;
+    }
   };
 
   const {
@@ -131,12 +143,11 @@ export const BoardPage = () => {
     socketEmit("game:started", payload);
   };
 
-  socketOn("objectives:created", () => {
+  socketOn<"objectives:created">("objectives:created", () => {
     refetchObjectives();
   });
 
-  socketOn("error", (payload: SocketPayload["error"]) => {
-    console.log(payload.message);
+  socketOn<"error">("error", (payload) => {
     setError(payload);
   });
 
@@ -175,8 +186,8 @@ export const BoardPage = () => {
   //   console.log(payload);
   // });
 
-  socketOn("player:joined", (payload: SocketPayload["player:joined"]): void => {
-    if (!players || players.size < 1) {
+  socketOn<"player:joined">("player:joined", (payload): void => {
+    if (!players || players instanceof Error) {
       return;
     }
     const { newPlayer, socketId } = payload;
@@ -193,9 +204,9 @@ export const BoardPage = () => {
     refetchPlayers();
   });
 
-  socketOn("player:left", (payload: SocketPayload["player:left"]) => {
-    const { socketId } = payload;
-    console.log(`${players?.get(socketId)?.user} has left the room`);
+  socketOn<"player:left">("player:left", (/**payload*/) => {
+    // const { socketId } = payload;
+    // console.log(`${players?.get(socketId)?.user} has left the room`);
     if (!players) {
       return;
     }
@@ -206,43 +217,40 @@ export const BoardPage = () => {
     // grey out the name or color or add other indicator
   });
 
-  socketOn(
-    "player:waiting",
-    async (payload: SocketPayload["player:waiting"]) => {
-      // if (!players) return;
-      await refetchPlayers();
-      if (!players) return;
-      const { userId, socketId, color } = payload;
+  socketOn<"player:waiting">("player:waiting", async (payload) => {
+    // if (!players) return;
+    await refetchPlayers();
+    if (!players || players instanceof Error) return;
+    const { userId, socketId, color } = payload;
 
-      const player = players.get(socketId);
+    const player = players.get(socketId);
 
-      const newColors = new Map(allColors);
-      const iterator = newColors.entries();
-      const colorsToDelete = new Set<string>([color]);
+    const newColors = new Map(allColors);
+    const iterator = newColors.entries();
+    const colorsToDelete = new Set<string>([color]);
 
-      // set player's new color
-      if (player) {
-        player.color = color;
-      }
-
-      // add to in-memory set of colors to delete from available colors
-      Array.from(players.values()).forEach((p) => {
-        if (p?.color && currentUser && currentUser.id === Number(userId))
-          colorsToDelete.add(p.color);
-      });
-
-      // delete chosen color from available colors
-      for (let i = 0; i < availableColors.size; i++) {
-        const [_key, value] = iterator.next().value;
-        if (colorsToDelete.has(value)) {
-          newColors.delete(_key);
-        }
-      }
-      setAvailableColors(newColors);
+    // set player's new color
+    if (player) {
+      player.color = color;
     }
-  );
 
-  socketOn("cell:toggled", (payload: SocketPayload["cell:toggled"]) => {
+    // add to in-memory set of colors to delete from available colors
+    Array.from(players.values()).forEach((p) => {
+      if (p?.color && currentUser && currentUser.id === Number(userId))
+        colorsToDelete.add(p.color);
+    });
+
+    // delete chosen color from available colors
+    for (let i = 0; i < availableColors.size; i++) {
+      const [_key, value] = iterator.next().value;
+      if (colorsToDelete.has(value)) {
+        newColors.delete(_key);
+      }
+    }
+    setAvailableColors(newColors);
+  });
+
+  socketOn<"cell:toggled">("cell:toggled", (payload) => {
     const { userId, cellId, eventType } = payload;
     const newMessages = [...messages];
     newMessages.push({
@@ -290,14 +298,14 @@ export const BoardPage = () => {
     socket.on("disconnect", onDisconnect);
 
     if (
+      objectives instanceof Error ||
+      players instanceof Error ||
       !players ||
-      players?.size < 1 ||
-      !objectives ||
       !currentUser ||
-      playersStatus != "success" ||
-      objectivesStatus !== "success"
+      playersStatus === "error" ||
+      objectivesStatus !== "success" ||
+      objectives instanceof Error
     ) {
-      console.log("thats a shame, no players");
       return;
     }
     const myPoints = new Set(
@@ -334,7 +342,14 @@ export const BoardPage = () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };
-  }, [objectives, players, currentUser, objectivesStatus, playersStatus]);
+  }, [
+    objectives,
+    players,
+    currentUser,
+    objectivesStatus,
+    playersStatus,
+    refetchObjectives,
+  ]);
 
   // emit room joined when joining a room
   useEffect(() => {
@@ -358,10 +373,8 @@ export const BoardPage = () => {
   // check if all players ready
   useEffect(() => {
     const newGameColors = { ...gameColors };
-    if (currentUser && players) {
+    if (currentUser && players && !(players instanceof Error)) {
       const allPlayersReady = (): boolean => {
-        console.log("checking all ready");
-        // this doesnt work anymore...
         const ready = Array.from(players.values()).every((player) => {
           if (currentUser && player.user.id === currentUser.id) {
             newGameColors.mine = player.color;
@@ -372,8 +385,8 @@ export const BoardPage = () => {
         });
         return ready;
       };
-      setGameColors(newGameColors);
       setAllReady(allPlayersReady());
+      setGameColors(newGameColors);
     }
   }, [players, currentUser]);
 
@@ -381,29 +394,20 @@ export const BoardPage = () => {
     <>
       {socketError && (
         <div>
-          <h3>
-            Sorry, you have to enter this board with a password to play this
-            board.
-          </h3>
-          Go back to{" "}
-          <Link to={`${socketError.redirectPath}`}>the play page</Link>, find
-          your game, and enter the password
+          <h3>{socketError.message}</h3>
+          Go back to <Link to={`${socketError.redirectPath}`}>this page</Link>,
+          and {socketError.suggestion}
         </div>
       )}
-      {!socketError && (
+      {!socketError && !(players instanceof Error) && (
         <Container size="2">
-          {currentUser && <p>Me: {currentUser.email}</p>}
+          <p>Pick a color and let the other players know you're ready</p>
           {players && currentUser && (
-            <ConnectionState
-              players={players}
-              isConnected={isConnected}
-              myColor={myColor}
-              currentUser={currentUser}
-            />
+            <ConnectionState players={players} isConnected={isConnected} />
           )}
           {!allReady && (
             <CirclePicker
-              onChange={(color, event) => {
+              onChange={(_color, event) => {
                 // TODO: convert this to HSL elsewhere so we can fux with opacity
                 setMyColor(availableColors.get(event.target.title)!);
                 setSelectedColor(availableColors.get(event.target.title)!);
@@ -416,7 +420,7 @@ export const BoardPage = () => {
             color={selectedColor}
             allReady={allReady}
           />
-          {currentUser && objectives && (
+          {currentUser && objectives && !(objectives instanceof Error) && (
             <Board
               broadcastClick={broadcastClick}
               score={score}

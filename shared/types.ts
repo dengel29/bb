@@ -1,4 +1,4 @@
-import { Board, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 export type Score = Map<"mine" | "theirs", Set<number>>;
 
@@ -8,6 +8,20 @@ export type BroadcastClickArgs = {
   cellId: number;
   eventType: "unclaim" | "claim";
 };
+
+export interface SuccessResponse<T> extends Response {
+  success: true;
+  data: T;
+}
+
+export interface FailureResponse extends Response {
+  success: false;
+  data: {
+    error: string;
+  };
+}
+
+export type ServerResponse<T> = SuccessResponse<T> | FailureResponse;
 
 // This is Prisma's recommended solution for creating type variations based on db models
 // @see https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety/operating-against-partial-structures-of-model-types#problem-using-variations-of-the-generated-model-type
@@ -153,6 +167,8 @@ declare global {
     interface User {
       email: string;
       id: number;
+      country: { name: string; id: number; localName: string | null } | null;
+      city: { name: string; id: number; localName: string | null } | null;
     }
   }
 }
@@ -206,6 +222,7 @@ export type SocketPayload = {
     message: string;
     errorType: errorEnum;
     redirectPath: PathPrefixedString;
+    suggestion: string;
   };
 };
 
@@ -213,7 +230,10 @@ type errorEnum = "unable-to-join";
 
 export type SocketAction = keyof SocketPayload;
 
-export type PossiblePayloads = ObjectValues<typeof SocketPayload>;
+export type PossiblePayloads = ObjectValues<SocketPayload>;
+export type SocketCallback<T extends SocketAction> = (
+  payload: SocketPayload[T]
+) => void;
 // export type PossiblePayloads = SocketPayload[SocketAction];
 
 export type PathPrefixedString = `/${string}`;

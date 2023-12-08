@@ -1,12 +1,17 @@
 import passport from "passport";
 import MagicLoginStrategy from "passport-magic-login";
-import { config } from "../config";
-import { sendEmail } from "./email-actions";
-import { findOrCreateUserByEmail } from "./auth";
+import { sendEmail } from "./email-actions.js";
+import { findOrCreateUserByEmail } from "./auth.js";
+import { appConfig } from "../config/index.js";
 
-export const magicLogin = new MagicLoginStrategy({
+// const domain =
+//   process.env.NODE_ENV === "PROD"
+//     ? "https://bingo-server-gylc.onrender.com"
+//     : "http://localhost:3000";
+
+export const magicLogin = new MagicLoginStrategy.default({
   // Used to encrypt the authentication token. Needs to be long, unique and (duh) secret.
-  secret: config.dev.jwtSecret,
+  secret: appConfig.JWT_SECRET,
 
   // The authentication callback URL
   callbackUrl: "/auth/magiclogin/callback",
@@ -20,7 +25,7 @@ export const magicLogin = new MagicLoginStrategy({
       to: destination,
       from: "dan@dngl.cc",
       subject: "Sign In To BingoBike",
-      textBody: `Click this link to finish logging in: http://localhost:3000${href}&email=${destination}`,
+      textBody: `Click this link to finish logging in: ${appConfig.DOMAIN}${href}&email=${destination}`,
     });
   },
 
@@ -30,7 +35,7 @@ export const magicLogin = new MagicLoginStrategy({
   // "payload" contains { "destination": "email" }
   // In standard passport fashion, call callback with the error as the first argument (if there was one)
   // and the user data as the second argument!
-  verify: (payload, callback) => {
+  verify: (payload: any, callback: (err: any, user?: Express.User) => void) => {
     // Get or create a user with the provided email from the database
     findOrCreateUserByEmail(payload.destination)
       .then((user) => {

@@ -3,13 +3,9 @@ import { PlayerMap } from "shared/types";
 export function ConnectionState({
   isConnected,
   players,
-  myColor,
-  currentUser,
 }: {
   isConnected: boolean;
   players: PlayerMap;
-  myColor?: string;
-  currentUser: { email: string; id: number };
 }): JSX.Element {
   return (
     <>

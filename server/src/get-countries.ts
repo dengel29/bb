@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { SessionData, Store } from "express-session";
-import EventEmitter from "events";
 
 const prisma = new PrismaClient();
 

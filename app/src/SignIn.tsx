@@ -2,16 +2,21 @@ import { useRef, useState } from "react";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { Link } from "react-router-dom";
 
+const domain =
+  process.env.NODE_ENV === "PROD"
+    ? "https://bingo-server-gylc.onrender.com"
+    : "http://localhost:3000";
+
 const SignIn = (): JSX.Element => {
   const email = useRef<HTMLInputElement>(null);
   const [emailSent, setEmailSent] = useState<boolean | null>(null);
   const [emailError, setEmailError] = useState<boolean | null>(null);
-  const { currentUser, loading, error } = useCurrentUser();
+  const { currentUser, loading } = useCurrentUser();
   const [inputsDisabled, setInputsDisabled] = useState(false);
   const submitEmail = () => {
     setInputsDisabled(true);
     setEmailError(false);
-    fetch(`http://localhost:3000/auth/magiclogin`, {
+    fetch(`${domain}/auth/magiclogin`, {
       method: `POST`,
       body: JSON.stringify({
         // `destination` is required.

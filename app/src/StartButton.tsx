@@ -20,7 +20,7 @@ export const StartButton = ({
   } else if (!disabled && !allReady) {
     buttonText = "I'm ready!";
   }
-  console.log("start button color", color);
+
   return (
     <div className="flex-small">
       <button

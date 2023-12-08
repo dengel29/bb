@@ -3,14 +3,20 @@ import { withHeaderLocations } from "./hooks/useHeader";
 import "./styles/header-nav.css";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 
+const domain =
+  process.env.NODE_ENV === "PROD"
+    ? "https://bingo-server-gylc.onrender.com"
+    : "http://localhost:3000";
+
 export const HeaderNav = (): JSX.Element => {
   const { currentUser, loading, error } = useCurrentUser();
   const { pathname } = useLocation();
   const logOut = async () => {
-    await fetch("http://localhost:3000/log-out", {
+    await fetch(`${domain}/log-out`, {
       method: "POST",
       credentials: "include",
     });
+    // replace with a server response of 205 to reset content
     window.location.replace("http://localhost:5173/home");
   };
 

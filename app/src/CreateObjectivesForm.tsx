@@ -5,6 +5,11 @@ import { useCurrentUser } from "./hooks/useCurrentUser";
 import toast from "react-hot-toast";
 import "./styles/objectives.css";
 
+const domain =
+  process.env.NODE_ENV === "PROD"
+    ? "https://bingo-server-gylc.onrender.com"
+    : "http://localhost:3000";
+
 const ObjectiveInputSet = ({
   setId,
   removeItem,
@@ -22,7 +27,8 @@ const ObjectiveInputSet = ({
     if (
       numberMatch &&
       isCountable === false &&
-      firstInput?.current?.value.match(/\d+/)
+      firstInput?.current?.value.match(/\d+/) &&
+      countLimitRef.current
     ) {
       countLimitRef.current.value = numberMatch[0];
     }
@@ -82,7 +88,7 @@ const ObjectiveInputSet = ({
 };
 
 export const CreateObjectivesForm = (): JSX.Element => {
-  const { currentUser, loading, error } = useCurrentUser();
+  const { currentUser } = useCurrentUser();
   const createObjectivesForm = useRef<HTMLFormElement>(null);
   const [objectiveIds, setObjectiveIds] = useState<Set<number>>(new Set([0]));
 
@@ -116,20 +122,15 @@ export const CreateObjectivesForm = (): JSX.Element => {
           objectives.push(objective);
         }
 
-        console.log(objectives);
-
         // console.log(formData);
         const toastId = toast.loading("Submitting...");
-        const response = await fetch(
-          "http://localhost:3000/api/create-objectives",
-          {
-            method: "POST",
-            body: JSON.stringify(objectives),
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await fetch(`${domain}/api/create-objectives`, {
+          method: "POST",
+          body: JSON.stringify(objectives),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
         // TODO: show success or error toast here
         // 200 is a success

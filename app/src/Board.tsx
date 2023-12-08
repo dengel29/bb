@@ -18,7 +18,7 @@ export const Board = ({
   allReady: boolean;
   generateBoard: () => void;
   objectives: BoardObjectivesDTO[];
-  gameColors: { mine: string; theirs: string };
+  gameColors: { mine: string | null; theirs: string | null };
 }): JSX.Element => {
   const handleClickBingoCell = (
     event: React.MouseEvent<HTMLButtonElement>

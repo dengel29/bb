@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-
+const domain =
+  process.env.NODE_ENV === "PROD"
+    ? "https://bingo-server-gylc.onrender.com"
+    : "http://localhost:3000";
 export const findMe = async (): Promise<
   [
     {
@@ -15,7 +18,7 @@ export const findMe = async (): Promise<
   let user = null,
     loading = false,
     error = "";
-  const response = await fetch("http://localhost:3000/user/me", {
+  const response = await fetch(`${domain}/user/me`, {
     method: "GET",
     credentials: "include",
     headers: {
@@ -25,7 +28,8 @@ export const findMe = async (): Promise<
     },
   });
   if (response.ok) {
-    user = await response.json();
+    const { data } = await response.json();
+    user = data;
   } else {
     user = null;
     error =

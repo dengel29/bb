@@ -7,7 +7,7 @@ import {
   CreateObjectiveDTO,
   GetBoardPlayerDTO,
   MyGamesDTO,
-} from "shared/types";
+} from "shared/types.js";
 
 const prisma = new PrismaClient();
 
@@ -335,6 +335,9 @@ export async function getRandomObjectives({ boardId }: { boardId: string }) {
     { id: number }[]
   >`SELECT id FROM objectives ORDER BY RANDOM() LIMIT 25`;
 
+  if (objectiveIds.length < 25) {
+    throw new Error("Sorry, not enough objectives");
+  }
   const boardObjectives: {
     cellX: number;
     cellY: number;
@@ -361,15 +364,19 @@ export async function createBoardObjectives({
   boardId,
 }: {
   boardId: string;
-}): Promise<BoardObjectivesDTO[]> {
-  const objectiveInput = await getRandomObjectives({ boardId });
-  await prisma.boardObjective.createMany({
-    data: objectiveInput,
-  });
+}): Promise<BoardObjectivesDTO[] | Error> {
+  try {
+    const objectiveInput = await getRandomObjectives({ boardId });
+    await prisma.boardObjective.createMany({
+      data: objectiveInput,
+    });
 
-  const boardObjectives = await getBoardObjectives({ boardId });
+    const boardObjectives = await getBoardObjectives({ boardId });
 
-  return boardObjectives;
+    return boardObjectives;
+  } catch (err: any) {
+    return err;
+  }
 }
 
 export async function getBoardObjectives({

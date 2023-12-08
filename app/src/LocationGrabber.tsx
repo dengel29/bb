@@ -7,20 +7,23 @@ type Location = {
   city: {
     name: string;
     id: number;
-    localName: string | null;
-  };
+    localName: string;
+  } | null;
   country: {
     name: string;
     id: number;
-    localName: string | null;
-  };
+    localName: string;
+  } | null;
 };
 export function LocationGrabber({
   location,
 }: {
   location?: Location;
 }): JSX.Element {
-  const [latLong, setLatlong] = useState<{ lat: number; long: number }>({});
+  const [latLong, setLatlong] = useState<{
+    lat: number | undefined;
+    long: number | undefined;
+  }>({ lat: undefined, long: undefined });
   const getLocation = async (): Promise<Location> => {
     if (!latLong.lat || !latLong.long) {
       throw new Error("No lat long provided");
@@ -64,7 +67,7 @@ export function LocationGrabber({
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      {location?.city && (
+      {location?.city && location?.country && (
         <div
           style={{
             border: "4px solid var(--green-7)",
@@ -84,10 +87,10 @@ export function LocationGrabber({
           <p>loading</p>
         </div>
       ) : null}
-      {!location && locationStatus === "success" ? (
+      {!location && loc?.country?.name && locationStatus === "success" ? (
         <div style={{ border: "1px solid red" }}>
           <p>
-            {loc.city.name}, {loc.country.name}
+            {loc?.city?.name}, {loc?.country.name}
           </p>
         </div>
       ) : null}

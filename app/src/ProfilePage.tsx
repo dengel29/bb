@@ -5,13 +5,17 @@ import { LocationGrabber } from "./LocationGrabber";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { Link } from "react-router-dom";
 export const ProfilePage = (): JSX.Element => {
-  const { currentUser, loading, error } = useCurrentUser();
+  const domain =
+    process.env.NODE_ENV === "PROD"
+      ? "https://bingo-server-gylc.onrender.com"
+      : "http://localhost:3000";
+  const { currentUser, loading } = useCurrentUser();
   const [myGames, setMyGames] = useState<MyGamesDTO[]>([]);
 
   useEffect(() => {
     const getMyGames = async (): Promise<MyGamesDTO[]> => {
       const response = await fetch(
-        `http://localhost:3000/api/games?userId=${currentUser?.id}`,
+        `${domain}/api/games?userId=${currentUser?.id}`,
         {
           method: "GET",
           credentials: "include",
@@ -21,32 +25,41 @@ export const ProfilePage = (): JSX.Element => {
           },
         }
       );
-      return await response.json();
+      const { data } = await response.json();
+      return data;
     };
     if (currentUser?.id && !loading) {
       getMyGames().then((games: MyGamesDTO[]) => {
         setMyGames(games);
       });
     }
-  }, [currentUser, loading]);
+  }, [currentUser, loading, domain]);
 
-  function dateDiff(
+  function isDiffNan(earlierDate: Date, laterDate: Date): boolean {
+    const diff = earlierDate.valueOf() - laterDate.valueOf();
+    return isNaN(diff);
+  }
+
+  function formatDateDiff(
     earlierDate: Date,
     laterDate: Date
-  ):
-    | { diff: number; ms: number; s: number; m: number; h: number; d: number }
-    | false {
+  ): {
+    diff: number;
+    ms: number;
+    s: number;
+    m: number;
+    h: number;
+    d: number;
+  } {
     const diff = earlierDate.valueOf() - laterDate.valueOf();
-    return isNaN(diff)
-      ? false
-      : {
-          diff: diff,
-          ms: Math.floor(diff % 1000),
-          s: Math.floor((diff / 1000) % 60),
-          m: Math.floor((diff / 60000) % 60),
-          h: Math.floor((diff / 3600000) % 24),
-          d: Math.floor(diff / 86400000),
-        };
+    return {
+      diff: diff,
+      ms: Math.floor(diff % 1000),
+      s: Math.floor((diff / 1000) % 60),
+      m: Math.floor((diff / 60000) % 60),
+      h: Math.floor((diff / 3600000) % 24),
+      d: Math.floor(diff / 86400000),
+    };
   }
   return (
     <PageContainer title={"Profile"}>
@@ -64,19 +77,22 @@ export const ProfilePage = (): JSX.Element => {
 
         <LocationGrabber
           location={{
-            city: currentUser?.city,
-            country: currentUser?.country,
+            city: currentUser?.city || null,
+            country: currentUser?.country || null,
           }}
         />
       </div>
       <hr />
       <h1>My games</h1>
       {currentUser &&
+        myGames &&
         myGames.map((game) => {
-          const { diff, ms, s, m, h, d } = dateDiff(
-            new Date(),
-            new Date(game.createdAt)
-          );
+          const badDate = isDiffNan(new Date(), new Date(game.createdAt));
+          if (badDate) {
+            return;
+          }
+          const { h, d } = formatDateDiff(new Date(), new Date(game.createdAt));
+
           return (
             <div key={game.id}>
               <Link to={`/play/${game.id}`}>

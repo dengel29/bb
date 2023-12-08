@@ -4,6 +4,11 @@ import "./styles/create-board.css";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { QueryObserverResult } from "@tanstack/react-query";
 
+const domain =
+  process.env.NODE_ENV === "PROD"
+    ? "https://bingo-server-gylc.onrender.com"
+    : "http://localhost:3000";
+
 export const CreateBoardForm = ({
   refetchRooms,
 }: {
@@ -45,7 +50,7 @@ export const CreateBoardForm = ({
           // seed: createBoardForm.current.seed.value,
         };
 
-        const response = await fetch("http://localhost:3000/api/create-room", {
+        const response = await fetch(`${domain}/api/create-room`, {
           method: "POST",
           body: JSON.stringify(formData),
           credentials: "include",

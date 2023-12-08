@@ -4,11 +4,17 @@ import { PageContainer } from "./PageContainer";
 import { RoomList } from "./RoomList";
 import "./styles/create-board.css";
 import { GetBoardDTO } from "shared/types";
-import { get } from "./requests";
+import { get, isSuccessResponse } from "./requests";
 
 export const CreateGamePage = (): JSX.Element => {
   const recentRooms = async () => {
-    return await get<GetBoardDTO[]>("/api/get-rooms", false);
+    const response = await get<GetBoardDTO[]>("/api/get-rooms", false);
+
+    if (isSuccessResponse(response)) {
+      return response.data;
+    } else {
+      throw new Error(response.data.error);
+    }
   };
   const { data: rooms, refetch: refetchRooms } = useQuery({
     queryFn: recentRooms,
