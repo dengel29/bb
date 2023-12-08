@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "es2020",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "Node16",
@@ -22,7 +22,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "config.ts"],
+  "include": ["src", "config"],
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
   // "references": [{ "path": "./tsconfig.node.json" }]
 }

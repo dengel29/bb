@@ -1,7 +1,15 @@
 **/*/node_modules
-config
+!server/config
+
+server/config/envs/dev.ts
+!server/config/envs/prod.ts
+
+
+
+
+
+
 node_modules
-server/config.ts
 .env
 docker-compose.yml
 **/*/dist

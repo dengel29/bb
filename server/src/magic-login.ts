@@ -25,7 +25,7 @@ export const magicLogin = new MagicLoginStrategy.default({
       to: destination,
       from: "dan@dngl.cc",
       subject: "Sign In To BingoBike",
-      textBody: `Click this link to finish logging in: ${appConfig.domain}${href}&email=${destination}`,
+      textBody: `Click this link to finish logging in: ${appConfig.DOMAIN}${href}&email=${destination}`,
     });
   },
 
