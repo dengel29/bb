@@ -89,15 +89,16 @@ const io = new Server(httpServer, serverOptions);
 
 const pgSession = connectPgSimple(session);
 
-app.enable("trust proxy");
+if (process.env.APP_ENV === "prod") app.enable("trust proxy");
 app.use(
   session({
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
       sameSite: true,
+      secure: process.env.APP_ENV === "prod",
     },
-    proxy: true,
+    proxy: process.env.APP_ENV === "prod",
     secret: appConfig.SESSION_SECRET,
     name: "bingoToken",
     resave: false,
