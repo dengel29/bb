@@ -103,7 +103,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: new pgSession({
-      conString: appConfig.DB_ADDRESS,
+      conString: appConfig.DATABASE_URL,
       tableName: "sessions",
     }),
   })
