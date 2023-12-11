@@ -36,7 +36,10 @@ import { appConfig } from "../config/index.js";
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
 
-const client = process.env.NODE_ENV === "PROD" ? "" : "http://localhost:5173";
+const client =
+  process.env.NODE_ENV === "PROD"
+    ? "https://bingo-app-2rtu.onrender.com"
+    : "http://localhost:5173";
 
 const port = process.env.PORT || 3000;
 // const buildPath =
@@ -44,7 +47,10 @@ const port = process.env.PORT || 3000;
 //     ? path.normalize(path.join(__dirname, "../.."))
 //     : path.normalize(path.join(__dirname, "../build"));
 const app = express();
-const allowedOrigins = ["http://localhost:5173"];
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://bingo-app-2rtu.onrender.com",
+];
 
 const headers = (req: Request, res: ServerResponse, next: () => void) => {
   const origin: string = req.headers.origin!;

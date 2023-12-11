@@ -1,7 +1,4 @@
 import { io } from "socket.io-client";
-const URL =
-  process.env.APP_ENV === "prod"
-    ? "https://bingo-server-gylc.onrender.com"
-    : "http://localhost:3000";
+import { domain } from "./domain";
 
-export const socket = io(URL);
+export const socket = io(domain);

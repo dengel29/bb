@@ -3,11 +3,7 @@ import { CreateBoardDTO, GetBoardDTO } from "shared/types";
 import "./styles/create-board.css";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { QueryObserverResult } from "@tanstack/react-query";
-
-const domain =
-  process.env.APP_ENV === "prod"
-    ? "https://bingo-server-gylc.onrender.com"
-    : "http://localhost:3000";
+import { domain } from "./domain";
 
 export const CreateBoardForm = ({
   refetchRooms,

@@ -3,11 +3,7 @@ import { useState, useRef, FormEvent } from "react";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import "./styles/create-board.css";
 import { Link, useNavigate } from "react-router-dom";
-
-const domain =
-  process.env.APP_ENV === "prod"
-    ? "https://bingo-server-gylc.onrender.com"
-    : "http://localhost:3000";
+import { domain } from "./domain";
 
 export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
   const { room } = props;
