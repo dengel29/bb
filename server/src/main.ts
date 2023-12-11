@@ -88,6 +88,8 @@ const prisma = new PrismaClient();
 const io = new Server(httpServer, serverOptions);
 
 const pgSession = connectPgSimple(session);
+
+app.enable("trust proxy");
 app.use(
   session({
     cookie: {
