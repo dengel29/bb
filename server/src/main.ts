@@ -83,7 +83,7 @@ interface IOServerOptions extends Partial<ServerOptions> {
 
 const serverOptions: IOServerOptions = {
   cors: {
-    origin: ["http://localhost:5173"],
+    origin: allowedOrigins,
   },
 };
 
