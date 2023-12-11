@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { withHeaderLocations } from "./hooks/useHeader";
 import "./styles/header-nav.css";
 import { useCurrentUser } from "./hooks/useCurrentUser";
-import { domain } from "./domain";
+import { domain, client } from "./domain";
 
 export const HeaderNav = (): JSX.Element => {
   const { currentUser, loading, error } = useCurrentUser();
@@ -13,7 +13,7 @@ export const HeaderNav = (): JSX.Element => {
       credentials: "include",
     });
     // replace with a server response of 205 to reset content
-    window.location.replace("http://localhost:5173/home");
+    window.location.replace(`${client}/home`);
   };
 
   const authLink =

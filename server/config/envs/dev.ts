@@ -9,5 +9,6 @@ export function createLocalConfig() {
     POSTMARK_API_TOKEN: process.env.POSTMARK_API_TOKEN as string,
     DATABASE_URL: process.env.DATABASE_URL as string,
     DOMAIN: "http://localhost:3000",
+    CLIENT: "http://localhost:5173",
   });
 }

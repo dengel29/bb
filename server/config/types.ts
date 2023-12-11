@@ -4,4 +4,5 @@ export type AppConfig = {
   POSTMARK_API_TOKEN: string;
   DATABASE_URL: string;
   DOMAIN: string;
+  CLIENT: string;
 };
