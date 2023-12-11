@@ -4,11 +4,7 @@ import { PageContainer } from "./PageContainer";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import toast from "react-hot-toast";
 import "./styles/objectives.css";
-
-const domain =
-  process.env.APP_ENV === "prod"
-    ? "https://bingo-server-gylc.onrender.com"
-    : "http://localhost:3000";
+import { domain } from "./domain";
 
 const ObjectiveInputSet = ({
   setId,

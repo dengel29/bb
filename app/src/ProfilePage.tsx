@@ -4,12 +4,9 @@ import { PageContainer } from "./PageContainer";
 import { LocationGrabber } from "./LocationGrabber";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { Link } from "react-router-dom";
-export const ProfilePage = (): JSX.Element => {
-  const domain =
-    process.env.APP_ENV === "prod"
-      ? "https://bingo-server-gylc.onrender.com"
-      : "http://localhost:3000";
+import { domain } from "./domain";
 
+export const ProfilePage = (): JSX.Element => {
   const { currentUser, loading } = useCurrentUser();
   const [myGames, setMyGames] = useState<MyGamesDTO[]>([]);
 

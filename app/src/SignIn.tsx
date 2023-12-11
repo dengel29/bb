@@ -1,11 +1,7 @@
 import { useRef, useState } from "react";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { Link } from "react-router-dom";
-
-const domain =
-  process.env.NODE_ENV === "PROD"
-    ? "https://bingo-server-gylc.onrender.com"
-    : "http://localhost:3000";
+import { domain } from "./domain";
 
 const SignIn = (): JSX.Element => {
   const email = useRef<HTMLInputElement>(null);

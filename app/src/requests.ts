@@ -4,11 +4,7 @@ import {
   FailureResponse,
   ServerResponse,
 } from "shared/types";
-
-const domain =
-  process.env.APP_ENV === "prod"
-    ? "https://bingo-server-gylc.onrender.com"
-    : "http://localhost:3000";
+import { domain } from "./domain";
 
 export function isSuccessResponse<T>(
   res: SuccessResponse<T> | FailureResponse

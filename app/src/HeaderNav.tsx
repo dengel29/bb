@@ -2,11 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { withHeaderLocations } from "./hooks/useHeader";
 import "./styles/header-nav.css";
 import { useCurrentUser } from "./hooks/useCurrentUser";
-
-const domain =
-  process.env.APP_ENV === "prod"
-    ? "https://bingo-server-gylc.onrender.com"
-    : "http://localhost:3000";
+import { domain } from "./domain";
 
 export const HeaderNav = (): JSX.Element => {
   const { currentUser, loading, error } = useCurrentUser();
