@@ -36,10 +36,7 @@ import { appConfig } from "../config/index.js";
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
 
-const client =
-  process.env.NODE_ENV === "PROD"
-    ? "https://bingo-app-2rtu.onrender.com"
-    : "http://localhost:5173";
+const client = appConfig.CLIENT;
 
 const port = process.env.PORT || 3000;
 // const buildPath =
@@ -314,13 +311,12 @@ app.post("/api/create-objectives", async (req, res) => {
 
 // magicLogin.send maps to the sendEmail option
 app.post("/auth/magiclogin", magicLogin.send);
-
 // passport.authenticate("magicLogin") maps to verify in the options of magic-login
 app.get(
   "/auth/magiclogin/callback",
   passport.authenticate("magiclogin", {
-    successRedirect: "http://localhost:5173/login-success",
-    failureRedirect: "http://localhost:5173/",
+    successRedirect: `${appConfig.CLIENT}/login-success`,
+    failureRedirect: `${appConfig.CLIENT}/`,
   })
 );
 
