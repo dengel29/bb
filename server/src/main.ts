@@ -97,6 +97,7 @@ app.use(
       httpOnly: true,
       sameSite: true,
     },
+    proxy: true,
     secret: appConfig.SESSION_SECRET,
     name: "bingoToken",
     resave: false,
