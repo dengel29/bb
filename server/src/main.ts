@@ -44,10 +44,7 @@ const port = process.env.PORT || 3000;
 //     ? path.normalize(path.join(__dirname, "../.."))
 //     : path.normalize(path.join(__dirname, "../build"));
 const app = express();
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://bingo-app-2rtu.onrender.com",
-];
+const allowedOrigins = ["http://localhost:5173", "https://bb.dngl.cc"];
 
 const headers = (req: Request, res: ServerResponse, next: () => void) => {
   const origin: string = req.headers.origin!;
