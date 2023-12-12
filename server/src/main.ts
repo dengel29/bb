@@ -95,7 +95,8 @@ app.use(
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      sameSite: "none",
+      sameSite: process.env.APP_ENV === "prod" ? "lax" : "strict",
+      domain: appConfig.DOMAIN,
       secure: process.env.APP_ENV === "prod",
     },
     proxy: process.env.APP_ENV === "prod",
