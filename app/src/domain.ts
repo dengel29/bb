@@ -1,7 +1,7 @@
 export const domain = import.meta.env.PROD
-  ? "https://bingo-server-gylc.onrender.com"
+  ? "https://bb-api.dngl.cc"
   : "http://localhost:3000";
 
 export const client = import.meta.env.PROD
-  ? "https://bingo-app-2rtu.onrender.com"
+  ? "https://bb.dngl.cc"
   : "http://localhost:5173";

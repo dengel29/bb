@@ -98,10 +98,10 @@ app.use(
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      sameSite: "none",
+      sameSite: "strict",
       secure: "auto",
     },
-    // proxy: process.env.APP_ENV === "prod",
+    proxy: process.env.APP_ENV === "prod",
     secret: appConfig.SESSION_SECRET,
     name: "bingoToken",
     resave: false,
