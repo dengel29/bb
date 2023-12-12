@@ -97,7 +97,7 @@ app.use(
       httpOnly: true,
       sameSite: process.env.APP_ENV === "prod" ? "lax" : "strict",
       domain: appConfig.DOMAIN,
-      secure: process.env.APP_ENV === "prod",
+      secure: false,
     },
     proxy: process.env.APP_ENV === "prod",
     secret: appConfig.SESSION_SECRET,
