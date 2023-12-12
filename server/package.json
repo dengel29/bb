@@ -11,7 +11,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p ./tsconfig.json",
     "start": "tsx src/main.ts",
-    "start:dev": "tsx watch src/main.ts",
+    "start:dev": "APP_ENV=dev tsx watch src/main.ts",
     "start:prod": "node dist/src/main.js"
   },
   "keywords": [],

@@ -89,17 +89,19 @@ const io = new Server(httpServer, serverOptions);
 
 const pgSession = connectPgSimple(session);
 
-if (process.env.APP_ENV === "prod") app.enable("trust proxy");
+if (process.env.APP_ENV === "prod") {
+  app.enable("trust proxy");
+}
+
 app.use(
   session({
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      sameSite: process.env.APP_ENV === "prod" ? "lax" : "strict",
-      domain: appConfig.DOMAIN,
-      secure: false,
+      sameSite: "none",
+      secure: "auto",
     },
-    proxy: process.env.APP_ENV === "prod",
+    // proxy: process.env.APP_ENV === "prod",
     secret: appConfig.SESSION_SECRET,
     name: "bingoToken",
     resave: false,
@@ -114,6 +116,30 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+// const printHeaders = (req: Request, res: ServerResponse, next: () => void) => {
+//   console.log("COOKIE??", res.getHeader("Set-Cookie"));
+//   console.log(
+//     "INCOMING ReQUEST HEADerS:",
+//     JSON.stringify(
+//       {
+//         originalUrl: req.originalUrl,
+//         cookies: req.cookies ? req.cookies : "none",
+//         route: req.route,
+//         params: req.params,
+//         headers: req.headers,
+//       },
+//       undefined,
+//       2
+//     )
+//   );
+
+//   console.log(
+//     "OUTGOING HEADERS: ",
+//     JSON.stringify(res.getHeaders(), undefined, 2)
+//   );
+//   next();
+// };
+// app.use(printHeaders);
 passport.serializeUser((user, done) => {
   done(null, user);
 });
