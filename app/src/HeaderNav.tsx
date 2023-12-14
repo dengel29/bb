@@ -28,7 +28,7 @@ export const HeaderNav = (): JSX.Element => {
   return (
     <nav className="full-width flex-even-row row-to-column">
       <label id="open-nav">
-        •••
+        ▦
         <input type="checkbox" />
       </label>
       {withHeaderLocations.map((location) => {

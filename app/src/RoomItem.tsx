@@ -2,6 +2,7 @@ import { BoardPlayerCreatedDTO, GetBoardDTO, JoinBoardDTO } from "shared/types";
 import { useState, useRef, FormEvent } from "react";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import "./styles/create-board.css";
+import "./index.css";
 import { Link, useNavigate } from "react-router-dom";
 import { domain } from "./domain";
 
@@ -119,7 +120,9 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
             <p>Password</p>
             <input type="password" name="password" />
           </label>
-          <button type="submit">Submit</button>
+          <button className="btn submit" type="submit">
+            Submit
+          </button>
         </form>
       )}
       {requestStatus?.error && (

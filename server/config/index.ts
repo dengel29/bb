@@ -10,6 +10,7 @@ function getConfig() {
     case "dev":
       return createLocalConfig();
     default:
-      throw new Error(`Invalid APP_ENV "${process.env.APP_ENV}"`);
+      return createLocalConfig();
+    // throw new Error(`Invalid APP_ENV "${process.env.APP_ENV}"`);
   }
 }

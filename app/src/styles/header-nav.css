@@ -1,3 +1,19 @@
+@import '../index.css';
+
+
+nav {
+  background-position: 5cm  5cm;
+  background-size: 15px 15px;  
+  background-blend-mode:soft-light;
+  background-image:
+    linear-gradient(to right, var(--surface-1) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--surface-1) 1px, transparent 1px),
+    radial-gradient(circle, var(--brand) 0.2px, rgba(130, 8, 8, 0) 0.9px);
+  padding: var(--size-3);
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
 .width-lg {
   width: var(--size-lg);
 }
@@ -6,7 +22,7 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  & > * {
+  & > *:not(button) {
     margin-inline: var(--size-1);
   } 
 }
@@ -15,11 +31,10 @@
   text-decoration-line: underline;
   text-decoration-thickness: 4px;
   text-decoration-skip-ink:none;
-  text-decoration-color: var(--purple-7);
+  text-decoration-color: var(--color-splash-bright-1);
 }
 
 .row-to-column {
-  width: 90vw;
   overflow:hidden;
   margin-bottom:4vh;
   & label {
@@ -31,7 +46,7 @@
     flex-direction: column;
     justify-content: flex-start;
     align-content: flex-start;
-    background-color: var(--green-0);
+    background-color: var(--surface-1);
     & label {
       transform: -60deg;
       transform-origin: 20%;
@@ -85,4 +100,3 @@
     transition: height 0.2s ease;
   }
 }
-

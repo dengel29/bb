@@ -46,7 +46,7 @@ export const BingoCell = ({
         maxWidth: "200px",
         background: `${sharedStyle}`,
       }}
-      className={`cell ${owner}`}
+      className={`cell one-to-one ${owner}`}
     >
       <Text
         size="3"

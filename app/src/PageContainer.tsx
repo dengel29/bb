@@ -10,7 +10,7 @@ export const PageContainer = (props: PageProps) => {
     document.title = props.title;
   }, [props.title]);
   return (
-    <Container>
+    <Container width="100%" style={{ overflowX: "hidden" }}>
       {header ? <HeaderNav /> : null}
       {props.children}
     </Container>

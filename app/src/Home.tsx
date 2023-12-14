@@ -1,6 +1,6 @@
 import "./App.css";
 import "@radix-ui/themes/styles.css";
-import { Text } from "@radix-ui/themes";
+
 import { PageContainer } from "./PageContainer";
 import { Link } from "react-router-dom";
 
@@ -18,10 +18,25 @@ export function HomePage(): JSX.Element {
 
   return (
     <PageContainer title={"Welcome to Bike Bingo"}>
-      <Text size={"8"}>Welcome to Bingo bike</Text>
+      <h1>Welcome to Bike Bingo</h1>
       <br />
-      <p>A globally* available bingo game you play in your city</p>
-      <small>only available in Taiwan at the moment</small>
+      <h2>What can you do now</h2>
+      <ul>
+        <li>
+          <p>Sign Up</p>
+        </li>
+        <li>
+          <p>Create a password-protected game</p>
+        </li>
+        <li>
+          <p>Invite a friend</p>
+        </li>
+        <li>
+          <p>Send feedback</p>p
+        </li>
+      </ul>
+      <p>A globally* available bingo game you play in your city*</p>
+      <small>*only available in Taiwan at the moment</small>
 
       <Link to="/sign-in">Get Playing</Link>
     </PageContainer>

@@ -3,6 +3,7 @@ import { CreateObjectiveDTO } from "shared/types";
 import { PageContainer } from "./PageContainer";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import toast from "react-hot-toast";
+import "./index.css";
 import "./styles/objectives.css";
 import { domain } from "./domain";
 
@@ -40,7 +41,7 @@ const ObjectiveInputSet = ({
       <div className="objectives-list__container">
         <div key={setId} className="objective-item__container">
           <button onClick={() => removeItem(setId)} className="delete btn">
-            Delete
+            <span>Delete</span>
           </button>
           <label>
             Display Name
