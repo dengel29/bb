@@ -37,26 +37,10 @@ export function HowToPlayPage() {
   };
   const handleTutorialClick = (
     event: React.MouseEvent<HTMLButtonElement>,
-    type: "normal" | "countable" | "claimed-lockout" | "claimed-standard"
+    type: "normal" | "claimed-lockout"
   ) => {
-    console.log(event);
-    // console.log(type);
-    switch (type) {
-      case "normal":
-        normalClick(event);
-        break;
-      case "countable":
-        countableClick(event);
-        break;
-      case "claimed-lockout":
-        claimedLockoutClick(event);
-        break;
-      case "claimed-standard":
-        claimedStandardClick(event);
-        break;
-      default:
-        break;
-    }
+    if (type === "claimed-lockout") return;
+    normalClick(event);
   };
 
   const sharedStyle = `linear-gradient(0.35turn, var(--${gameColors.mine}-7) 0 50%, var(--${gameColors.theirs}-7) 50% 100%)`;
@@ -75,19 +59,6 @@ export function HowToPlayPage() {
   }
 
   function normalClick(event: React.MouseEvent<HTMLButtonElement>) {
-    incrementScore(event);
-  }
-
-  function countableClick(event: React.MouseEvent<HTMLButtonElement>) {
-    incrementScore(event);
-  }
-
-  function claimedLockoutClick(event: React.MouseEvent<HTMLButtonElement>) {
-    console.log(event);
-    throw new Error("Function not implemented.");
-  }
-
-  function claimedStandardClick(event: React.MouseEvent<HTMLButtonElement>) {
     incrementScore(event);
   }
 
@@ -113,10 +84,14 @@ export function HowToPlayPage() {
         <h1>How To Bingo</h1>
         <p>
           Bingo is played on a 5-by-5 board. Each square on the board contains a
-          <strong> task</strong> – something to do around your city – like
-          "Cross a bridge", "Visit 5 churches", "Ride the bus one stop with your
-          bike". The goal is to complete an unbroken line - vertical,
-          horizontal, or diagonal – of 5 squares, like below.
+          different <strong> objective</strong> – something to do around your
+          city – like "Cross a bridge", "Visit 4 churches", "Find a dog wearing
+          clothes". If you accomplish one of these tasks, you can claim the
+          square.
+        </p>
+        <p>
+          The goal is to complete an unbroken line - vertical, horizontal, or
+          diagonal – of 5 squares, like below.
         </p>
 
         <div className="example-boards__container">
@@ -181,17 +156,13 @@ export function HowToPlayPage() {
           and mark that square as well.
         </p>
         <p>
-          <strong>Lockout</strong> is slightly different: once a square is
-          marked, no other player may mark it. A bingo <em>can</em> win here,
-          but there is also the possibility that a bingo will be made
+          <strong>Lockout</strong> is the most competitive way to play: once a
+          square is marked, no other player may mark it. A bingo <em>can</em>{" "}
+          win here, but there is also the possibility that a bingo will be made
           unachievable for both players, in which case whichever player claims
           the majority of squares then wins.
         </p>
-        <p>
-          In other words, first to bingo or first to 13 squares. As you can
-          imagine, Lockout is strategically the most interesting and therefore
-          the one I recommend.
-        </p>
+        <p>In other words, first to bingo or first to 13 squares.</p>
         <p>
           <strong>Blackout</strong> is not for the faint of heart: same rules as
           standard – all squares can be marked, whether or not your opponent has
@@ -208,15 +179,7 @@ export function HowToPlayPage() {
       </section>
       <section className="how-to__container">
         <h1>Square Types</h1>
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            gap: "calc(100vw/10)",
-            justifyContent: "space-between",
-          }}
-          className="how-to__item"
-        >
+        <div className="how-to__item">
           <BingoCell
             cellId={1}
             countable={false}
@@ -245,20 +208,12 @@ export function HowToPlayPage() {
         <hr />
         <br />
 
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            gap: "calc(100vw/10)",
-            justifyContent: "space-between",
-          }}
-          className="how-to__item"
-        >
+        <div className="how-to__item">
           <BingoCell
             cellId={2}
             countable={true}
             countLimit={4}
-            handleClick={(event) => handleTutorialClick(event, "countable")}
+            handleClick={(event) => handleTutorialClick(event, "normal")}
             text="Visit 4 churches"
             owner={determineOwner(2)}
             sharedStyle={determineOwner(2) === "shared" ? sharedStyle : ""}
@@ -277,15 +232,7 @@ export function HowToPlayPage() {
         </div>
         <hr />
         <br />
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            gap: "calc(100vw/10)",
-            justifyContent: "space-between",
-          }}
-          className="how-to__item"
-        >
+        <div className="how-to__item">
           <BingoCell
             cellId={3}
             countable={false}
@@ -309,21 +256,11 @@ export function HowToPlayPage() {
         </div>
         <hr />
         <br />
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            gap: "calc(100vw/10)",
-            justifyContent: "space-between",
-          }}
-          className="how-to__item"
-        >
+        <div className="how-to__item">
           <BingoCell
             cellId={4}
             countable={false}
-            handleClick={(event) =>
-              handleTutorialClick(event, "claimed-standard")
-            }
+            handleClick={(event) => handleTutorialClick(event, "normal")}
             text="Standard, non-lockout games, are coming soon"
             owner={determineOwner(4)}
             sharedStyle={determineOwner(4) === "shared" ? sharedStyle : ""}
@@ -331,9 +268,10 @@ export function HowToPlayPage() {
           <section className="how-to__description">
             <h2>Claimed Square (Standard or Blackout)</h2>
             <p>
-              When you're playing a "standard" or "blackout" game, 2 players can
-              claim the same square. Here, your opponent has already marked the
-              square, but you can still claim it too.
+              When you're playing a <strong>Standard</strong> or{" "}
+              <strong>Blackout</strong> game, 2 players can claim the same
+              square. Here, your opponent has already marked the square, but you
+              can still claim it too.
             </p>
             <p>
               Tap the square and observe its shared nature. These can also be

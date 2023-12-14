@@ -43,7 +43,6 @@ export const CreateBoardForm = ({
           name: createBoardForm.current.roomName.value,
           password: createBoardForm.current.roomPassword.value,
           gameType: createBoardForm.current.gameType.value,
-          // seed: createBoardForm.current.seed.value,
         };
 
         const response = await fetch(`${domain}/api/create-room`, {
@@ -100,7 +99,9 @@ export const CreateBoardForm = ({
             <option value="STANDARD">Standard</option>
             <option value="BLACKOUT">Blackout</option>
           </select>
-          <button type="submit">Submit</button>
+          <button className="btn submit" type="submit">
+            Submit
+          </button>
         </label>
       </form>
       {requestStatus?.error && (
