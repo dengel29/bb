@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MyGamesDTO } from "shared/types";
+import type { MyGamesDTO } from "shared/types";
 import { PageContainer } from "./PageContainer";
 import { LocationGrabber } from "./LocationGrabber";
 import { useCurrentUser } from "./hooks/useCurrentUser";

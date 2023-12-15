@@ -1,4 +1,4 @@
-import { GetBoardDTO } from "shared/types";
+import type { GetBoardDTO } from "shared/types";
 import { RoomItem } from "./RoomItem";
 import "./styles/create-board.css";
 

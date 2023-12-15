@@ -3,7 +3,7 @@ import { CreateBoardForm } from "./CreateBoardForm";
 import { PageContainer } from "./PageContainer";
 import { RoomList } from "./RoomList";
 import "./styles/create-board.css";
-import { GetBoardDTO } from "shared/types";
+import type { GetBoardDTO } from "shared/types";
 import { get, isSuccessResponse } from "./requests";
 
 export const CreateGamePage = (): JSX.Element => {

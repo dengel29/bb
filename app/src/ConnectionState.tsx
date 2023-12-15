@@ -1,4 +1,4 @@
-import { PlayerMap } from "shared/types";
+import type { PlayerMap } from "shared/types";
 
 export function ConnectionState({
   isConnected,

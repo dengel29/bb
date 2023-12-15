@@ -1,4 +1,8 @@
-import { BoardPlayerCreatedDTO, GetBoardDTO, JoinBoardDTO } from "shared/types";
+import type {
+  BoardPlayerCreatedDTO,
+  GetBoardDTO,
+  JoinBoardDTO,
+} from "shared/types";
 import { useState, useRef, FormEvent } from "react";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import "./styles/create-board.css";
@@ -37,7 +41,7 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
         setClientError({ error: true, reason });
         throw Error(reason);
       } else if (!currentUser?.id) {
-        const reason = "Please sign in to create a game";
+        const reason = "Please sign in before you can join a game";
         setClientError({ error: true, reason });
         throw Error(reason);
       } else {
