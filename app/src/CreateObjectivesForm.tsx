@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { CreateObjectiveDTO } from "shared/types";
+import type { CreateObjectiveDTO } from "shared/types";
 import { PageContainer } from "./PageContainer";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import toast from "react-hot-toast";

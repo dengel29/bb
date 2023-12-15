@@ -34,6 +34,7 @@ export const BingoCell = ({
       handleClick(event);
     }
   };
+
   return (
     <button
       onClick={handleCellClick}

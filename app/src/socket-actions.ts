@@ -1,4 +1,8 @@
-import { PossiblePayloads, SocketAction, SocketCallback } from "shared/types";
+import type {
+  PossiblePayloads,
+  SocketAction,
+  SocketCallback,
+} from "shared/types";
 import { socket } from "./socket";
 
 export function socketEmit(event: SocketAction, payload: PossiblePayloads) {

@@ -1,5 +1,5 @@
 import { FormEvent, useRef, useState } from "react";
-import { CreateBoardDTO, GetBoardDTO } from "shared/types";
+import type { CreateBoardDTO, GetBoardDTO } from "shared/types";
 import "./styles/create-board.css";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { QueryObserverResult } from "@tanstack/react-query";

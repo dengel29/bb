@@ -2,7 +2,7 @@ import { Container } from "@radix-ui/themes";
 import "./styles/board.css";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
+import type {
   GetBoardPlayerDTO,
   BoardObjectivesDTO,
   PlayerMap,

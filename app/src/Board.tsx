@@ -3,7 +3,11 @@ import { Grid } from "@radix-ui/themes";
 import { BingoCell } from "./Cell";
 import "./App.css";
 import "./styles/board.css";
-import { BoardObjectivesDTO, BroadcastClickArgs, Score } from "shared/types";
+import type {
+  BoardObjectivesDTO,
+  BroadcastClickArgs,
+  Score,
+} from "shared/types";
 
 export const Board = ({
   broadcastClick,
