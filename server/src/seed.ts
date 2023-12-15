@@ -3,12 +3,18 @@ import { objectives } from "./objectives.js";
 const prisma = new PrismaClient();
 
 async function createEntities() {
-  const country = await prisma.country.create({
-    data: { name: "Taiwan" },
+  const country = await prisma.country.upsert({
+    where: { name: "Taiwan" },
+    update: {},
+    create: {
+      name: "Taiwan",
+    },
   });
 
-  const city = await prisma.city.create({
-    data: { name: "Taipei", countryId: country.id },
+  const city = await prisma.city.upsert({
+    where: { name: "Taipei", id: 1 },
+    update: {},
+    create: { name: "Taipei", countryId: country.id },
   });
 
   const creator = await prisma.user.create({
@@ -35,7 +41,9 @@ async function createEntities() {
 createEntities()
   .then((res) => {
     console.log(res);
+    prisma.$disconnect();
   })
   .catch((err) => {
     console.log(err);
+    prisma.$disconnect().then(() => process.exit(1));
   });

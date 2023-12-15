@@ -12,6 +12,9 @@
     "app": "workspace:*",
     "server": "workspace:*"
   },
+  "prisma": {
+    "seed": "tsx server/src/seed.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
