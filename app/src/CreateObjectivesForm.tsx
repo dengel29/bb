@@ -37,7 +37,7 @@ const ObjectiveInputSet = ({
   }, []);
 
   return (
-    <div>
+    <div style={{ marginInline: "2em" }}>
       <div className="objectives-list__container">
         <div key={setId} className="objective-item__container">
           <button onClick={() => removeItem(setId)} className="delete btn">
