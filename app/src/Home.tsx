@@ -32,12 +32,14 @@ export function HomePage(): JSX.Element {
           <p>Invite a friend</p>
         </li>
         <li>
-          <p>Send feedback</p>p
+          <p>Send feedback to me at dan[at]dngl.cc</p>
         </li>
       </ul>
-      <p>A globally* available bingo game you play in your city*</p>
+      <p>A globally* available bingo game you play in your city**</p>
       <small>*only available in Taiwan at the moment</small>
-
+      <br />
+      <small>**really actually only Taipei</small>
+      <br />
       <Link to="/sign-in">Get Playing</Link>
     </PageContainer>
   );
