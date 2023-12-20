@@ -159,12 +159,10 @@ button:focus-visible {
 
 .btn.neutral {
   background-color: var(--indigo-8);
-  margin-block-start: 1em;
 }
 
 .btn.submit {
   background-color: var(--green-8);
-  /* margin-block: 1em; */
 }
 
 label {

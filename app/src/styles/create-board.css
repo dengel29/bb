@@ -88,3 +88,47 @@
 .error-message {
   color: var(--red-9);
 }
+
+.room-item {
+  & .btn.neutral {
+    margin-inline: initial;
+    padding: initial;
+    width: 50%;
+  }
+}
+
+form.enter-room {
+  padding-inline: 5%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  & label {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    & * {
+      margin-block: 0;
+    } 
+  }
+  & button.btn {
+    /* margin-block: 0; */
+    margin: initial;
+    
+  }
+  @media (width <= 768px) {
+    display: flex;
+    flex-direction: column;
+    & label {
+      width: 100%;
+      justify-content: space-between;
+      height: 60px;
+      margin-block: 1em;
+      & input {
+        height: 100%
+      }
+    }
+    & button {
+      align-self: flex-end
+    }
+  }
+}

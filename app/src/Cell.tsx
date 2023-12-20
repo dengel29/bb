@@ -1,5 +1,6 @@
 import { Text } from "@radix-ui/themes";
 import { useState } from "react";
+import "./styles/board.css";
 
 export const BingoCell = ({
   text,
@@ -41,16 +42,12 @@ export const BingoCell = ({
       data-id={cellId}
       key={cellId}
       style={{
-        minHeight: "150px",
-        width: "100%",
-        maxHeight: "200px",
-        maxWidth: "200px",
         background: `${sharedStyle}`,
       }}
       className={`cell one-to-one ${owner}`}
     >
       <Text
-        size="3"
+        size="5"
         style={{
           pointerEvents: "none",
           textOverflow: "wrap",
@@ -59,7 +56,11 @@ export const BingoCell = ({
       >
         {text}
       </Text>
-      {countable && <Text className={`opaque bottom-right`}>{count}</Text>}
+      {countable && (
+        <Text size="4" className={`opaque bottom-right`}>
+          {count}
+        </Text>
+      )}
     </button>
   );
 };
