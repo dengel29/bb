@@ -17,7 +17,7 @@ export const HeaderNav = (): JSX.Element => {
   };
 
   const authLink =
-    (loading && !currentUser) || (!loading && error) ? (
+    error || (!loading && error) || (!currentUser && error) ? (
       <Link to="/sign-in">Sign In</Link>
     ) : (
       <button onClick={() => logOut()}>
