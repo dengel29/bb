@@ -399,12 +399,12 @@ export const BoardPage = () => {
           and {socketError.suggestion}
         </div>
       )}
-      {!socketError && !(players instanceof Error) && (
+      {players && currentUser && (
+        <ConnectionState players={players} isConnected={isConnected} />
+      )}
+      {!socketError && !(players instanceof Error) && !allReady && (
         <Container size="2">
           <p>Pick a color and let the other players know you're ready</p>
-          {players && currentUser && (
-            <ConnectionState players={players} isConnected={isConnected} />
-          )}
           {!allReady && (
             <CirclePicker
               onChange={(_color, event) => {
@@ -420,17 +420,17 @@ export const BoardPage = () => {
             color={selectedColor}
             allReady={allReady}
           />
-          {currentUser && objectives && !(objectives instanceof Error) && (
-            <Board
-              broadcastClick={broadcastClick}
-              score={score}
-              allReady={allReady}
-              generateBoard={handleGameStart}
-              objectives={objectives}
-              gameColors={gameColors}
-            ></Board>
-          )}
         </Container>
+      )}
+      {currentUser && objectives && !(objectives instanceof Error) && (
+        <Board
+          broadcastClick={broadcastClick}
+          score={score}
+          allReady={allReady}
+          generateBoard={handleGameStart}
+          objectives={objectives}
+          gameColors={gameColors}
+        ></Board>
       )}
     </>
   );

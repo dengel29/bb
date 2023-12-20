@@ -169,9 +169,17 @@ section {
   animation-delay: 0.5s;
 }
 
+
+*:has(.board-container) {
+  max-height: 80vh;
+}
 .board-container {
+  box-sizing: content-box;
+  border: 20px solid var(--brand);
   @media (width <= 768px) {
-    width: 100vw;
+    width: 300vw;
+    /* padding-inline: 4em; */
+    /* padding-block: 4em; */
   }
 }
 
@@ -186,9 +194,11 @@ section {
 
 .cell.one-to-one {
   min-height: 150px;
+  /* min-width: 150px; */
   width: 100%;
-  max-height: 200px;
-  max-width: 200px;
+  height: 100%;
+  border: 2px solid var(--brand);
+  aspect-ratio: 1/1;
 }
 
 #last-marked {
