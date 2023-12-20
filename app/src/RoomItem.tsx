@@ -8,7 +8,7 @@ import { useCurrentUser } from "./hooks/useCurrentUser";
 import "./styles/create-board.css";
 import "./index.css";
 import { Link, useNavigate } from "react-router-dom";
-import { domain } from "./domain";
+import { post } from "./requests";
 
 export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
   const { room } = props;
@@ -49,22 +49,20 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
           password: roomEntryForm.current.password.value,
           boardId: room.id,
         };
-        const response = await fetch(`${domain}/api/rooms/join`, {
-          method: "POST",
-          body: JSON.stringify(formData),
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        if (response.ok) {
-          const { board }: BoardPlayerCreatedDTO = await response.json();
+        const response = await post<BoardPlayerCreatedDTO>(
+          "/api/rooms/join",
+          true,
+          formData
+        );
+
+        if (response.success) {
+          const { board }: BoardPlayerCreatedDTO = response.data;
           setRequestStatus({ error: false, reason: "" });
           navigator(`/play/${board.id}`);
         } else {
           setRequestStatus({
             error: true,
-            reason: response.statusText,
+            reason: response.data.error,
           });
         }
 
@@ -86,8 +84,9 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
           justifyContent: "space-between",
           paddingInline: "5%",
         }}
+        className="room-item"
       >
-        <button onClick={displayEntryForm}>
+        <button className="btn neutral" onClick={displayEntryForm}>
           <p>{room.name}</p>
         </button>
         {currentUser &&
@@ -108,19 +107,10 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
         <form
           action=""
           ref={roomEntryForm}
-          style={{ display: "flex", alignItems: "center" }}
           onSubmit={submitHandler}
+          className="enter-room"
         >
-          <label
-            style={{
-              width: "50%",
-              display: "flex",
-              height: "30px",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginRight: "auto",
-            }}
-          >
+          <label>
             <p>Password</p>
             <input type="password" name="password" />
           </label>
