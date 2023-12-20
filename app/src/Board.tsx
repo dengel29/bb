@@ -26,15 +26,18 @@ export const Board = ({
   gameColors: { mine: string | null; theirs: string | null };
 }): JSX.Element => {
   const boardRef = useRef<HTMLDivElement>(null);
-  const onUpdate = useCallback(({ x, y, scale }) => {
-    const { current: board } = boardRef;
+  const onUpdate = useCallback(
+    ({ x, y, scale }: { x: number; y: number; scale: number }) => {
+      const { current: board } = boardRef;
 
-    if (board) {
-      const value = make3dTransformValue({ x, y, scale });
+      if (board) {
+        const value = make3dTransformValue({ x, y, scale });
 
-      board.style.setProperty("transform", value);
-    }
-  }, []);
+        board.style.setProperty("transform", value);
+      }
+    },
+    []
+  );
 
   const handleClickBingoCell = (
     event: React.MouseEvent<HTMLButtonElement>

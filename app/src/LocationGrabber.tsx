@@ -35,7 +35,11 @@ export function LocationGrabber({
     });
     console.log("responsein", response);
 
-    return response;
+    if (response.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.error);
+    }
     // return { city: response.city, country: response.country };
   };
 

@@ -321,7 +321,6 @@ export const BoardPage = () => {
     });
 
     if (!otherPlayer) {
-      console.log("thats a shame, no other PLAYERS");
       return;
     }
     const theirPoints = new Set(
