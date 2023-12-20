@@ -29,22 +29,18 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { GetBoardPlayerDTO, SocketPayload } from "shared/types.js";
-// import { loadConfig, env } from "../config/load-config.js";
 import { appConfig } from "../config/index.js";
-
-// const config = await loadConfig();
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
 
 const client = appConfig.CLIENT;
 
 const port = process.env.PORT || 3000;
-// const buildPath =
-//   process.env.NODE_ENV === "development"
-//     ? path.normalize(path.join(__dirname, "../.."))
-//     : path.normalize(path.join(__dirname, "../build"));
+
 const app = express();
-const allowedOrigins = ["http://localhost:5173", "https://bb.dngl.cc"];
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://bb.dngl.cc",
+  "http://192.168.33.26:5173",
+];
 
 const headers = (req: Request, res: ServerResponse, next: () => void) => {
   const origin: string = req.headers.origin!;
@@ -64,6 +60,7 @@ app.use(
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   })
 );
+
 app.use(express.json());
 
 // socket.io stuff
@@ -362,7 +359,9 @@ app.get(
 // });
 
 app.get("/api/ping", (_req, res) => {
-  return res.json({ success: true, data: { message: "pong" } });
+  const data = { message: "pong" };
+  console.log(data);
+  return res.json({ success: true, data });
 });
 
 app.post("/api/rooms/join", async (req, res) => {
@@ -500,7 +499,7 @@ app.post("/log-out", (req, res, next) => {
       return next(err);
     }
     res.clearCookie("bingoToken", {
-      domain: "localhost",
+      domain: appConfig.BARE_DOMAIN,
       path: "/",
       sameSite: true,
       httpOnly: true,
