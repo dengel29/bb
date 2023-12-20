@@ -51,6 +51,9 @@ importers:
       react-hot-toast:
         specifier: ^2.4.1
         version: 2.4.1(csstype@3.1.2)(react-dom@18.2.0)(react@18.2.0)
+      react-quick-pinch-zoom:
+        specifier: ^5.1.0
+        version: 5.1.0(react-dom@18.2.0)(react@18.2.0)
       react-router-dom:
         specifier: ^6.15.0
         version: 6.16.0(react-dom@18.2.0)(react@18.2.0)
@@ -3559,6 +3562,25 @@ packages:
 
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
+    dev: false
+
+  /react-quick-pinch-zoom@5.1.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-c8iOBrhbWwuJkUgbM0itkxhYHN3Zc15fvwYclo52scuicPidOuXJxwoVboNtccgtG24w33EhpuKVA7aLt93oSA==}
+    peerDependencies:
+      prop-types: '>=15.0.0'
+      react: '>=16.4.0'
+      react-dom: '>=16.4.0'
+    peerDependenciesMeta:
+      prop-types:
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      tslib: 2.6.2
     dev: false
 
   /react-remove-scroll-bar@2.3.4(@types/react@18.2.21)(react@18.2.0):

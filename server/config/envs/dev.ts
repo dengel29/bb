@@ -8,7 +8,11 @@ export function createLocalConfig() {
       "604cedeecbddc60129f1727dab0fb646e1cefbf7d9fb2dc73d70d823bb65da9f",
     POSTMARK_API_TOKEN: process.env.POSTMARK_API_TOKEN as string,
     DATABASE_URL: process.env.DATABASE_URL as string,
-    DOMAIN: "http://localhost:3000",
-    CLIENT: "http://localhost:5173",
+    // BARE_DOMAIN: "localhost",
+    BARE_DOMAIN: "192.168.33.26",
+    // DOMAIN: "http://localhost:3000",
+    DOMAIN: "http://192.168.33.26:3000",
+    // CLIENT: "http://localhost:5173",
+    CLIENT: "http://192.168.33.26:5173",
   });
 }

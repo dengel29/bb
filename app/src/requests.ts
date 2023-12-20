@@ -51,7 +51,7 @@ export async function post<T>(
   path: string,
   authenticated: boolean,
   body: Omit<RequestInit["body"], "ReadableStream"> // TODO: set up type dictionary like for sockets
-): Promise<T> {
+): Promise<ServerResponse<T>> {
   const options: RequestInit = {
     method: "POST",
     credentials: "include",
