@@ -74,15 +74,31 @@ html {
   --text-1-dark: var(--gray-3);
   --text-2-dark: var(--gray-5);
   --text-3-dark: var(--gray-7);
-  --surface-1-dark: var(--gray-12);
-  --surface-2-dark: var(--gray-11);
-  --surface-3-dark: var(--gray-10);
-  --surface-4-dark: var(--gray-9);
+  --surface-1-dark: var(--sand-12);
+  --surface-2-dark: var(--stone-11);
+  --surface-3-dark: var(--stone-10);
+  --surface-4-dark: var(--stone-9);
   --surface-shadow-dark: var(--gray-12-hsl);
   --shadow-strength-dark: 80%;
   background-color: var(--surface-1);
   color: var(--text-1-);
   accent-color: var(--link);
+
+  input {
+    box-sizing: border-box;
+    -webkit-box-shadow: none;
+    -webkit-border:none;
+    box-shadow: none;
+    border: none;
+    border-bottom: 3px solid currentColor;
+    /* outline: initial; */
+  }
+
+  select:focus, input:focus {
+    /* background-color: green; */
+    outline: none;
+    border-bottom: 3px solid var(--brand);
+  }
   
   & nav > label {
     color: var(--brand);
@@ -154,6 +170,14 @@ button:focus-visible {
   & span {
     padding: 0 10px
   }
+}
+
+.page-container {
+  @media (width >= 768px) {
+    padding-inline: 2em;
+  };
+  background-color: var(--surface-1);
+  height: 100lvh
 }
 
 
