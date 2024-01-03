@@ -37,11 +37,11 @@ const ObjectiveInputSet = ({
   }, []);
 
   return (
-    <div style={{ marginInline: "2em" }}>
+    <div>
       <div className="objectives-list__container">
         <div key={setId} className="objective-item__container">
           <button onClick={() => removeItem(setId)} className="delete btn">
-            <span>Delete</span>
+            <span>Remove</span>
           </button>
           <label>
             Display Name
@@ -75,7 +75,7 @@ const ObjectiveInputSet = ({
               disabled={!isCountable}
               ref={countLimitRef}
             />
-            <small>How many times a player must execute the task</small>
+            <small># of times the task must be done</small>
           </label>
         </div>
         <br />
@@ -152,28 +152,24 @@ export const CreateObjectivesForm = (): JSX.Element => {
   return (
     <PageContainer title={"Create Tasks"}>
       <h1>Create Tasks For Taiwan</h1>
-      <div>
-        <form
-          ref={createObjectivesForm}
-          onSubmit={submitHandler}
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            flexDirection: "column",
-          }}
-        >
-          <div className="objectives-list__scroll">
-            {[...objectiveIds].map((inputSetId) => {
-              return (
-                <ObjectiveInputSet
-                  key={inputSetId}
-                  setId={inputSetId}
-                  removeItem={removeObjective}
-                />
-              );
-            })}
-          </div>
-          <br />
+
+      <form
+        ref={createObjectivesForm}
+        onSubmit={submitHandler}
+        className="create-objectives-form"
+      >
+        <div className="objectives-list__scroll">
+          {[...objectiveIds].map((inputSetId) => {
+            return (
+              <ObjectiveInputSet
+                key={inputSetId}
+                setId={inputSetId}
+                removeItem={removeObjective}
+              />
+            );
+          })}
+        </div>
+        <div className="button-group">
           <button
             type="button"
             className="btn neutral"
@@ -194,8 +190,8 @@ export const CreateObjectivesForm = (): JSX.Element => {
             Submit {objectiveIds.size} Task
             {objectiveIds.size > 1 ? "s" : ""}
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
     </PageContainer>
   );
 };
