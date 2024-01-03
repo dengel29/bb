@@ -63,8 +63,14 @@ const SignIn = (): JSX.Element => {
             ref={email}
             disabled={inputsDisabled}
           />
-          <button onClick={() => submitEmail()} disabled={inputsDisabled}>
-            Submit
+          <br />
+          <br />
+          <button
+            onClick={() => submitEmail()}
+            disabled={inputsDisabled}
+            className="btn submit"
+          >
+            Get e-mail
           </button>
           {emailSent && (
             <h2>

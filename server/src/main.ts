@@ -110,30 +110,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// const printHeaders = (req: Request, res: ServerResponse, next: () => void) => {
-//   console.log("COOKIE??", res.getHeader("Set-Cookie"));
-//   console.log(
-//     "INCOMING ReQUEST HEADerS:",
-//     JSON.stringify(
-//       {
-//         originalUrl: req.originalUrl,
-//         cookies: req.cookies ? req.cookies : "none",
-//         route: req.route,
-//         params: req.params,
-//         headers: req.headers,
-//       },
-//       undefined,
-//       2
-//     )
-//   );
-
-//   console.log(
-//     "OUTGOING HEADERS: ",
-//     JSON.stringify(res.getHeaders(), undefined, 2)
-//   );
-//   next();
-// };
-// app.use(printHeaders);
 passport.serializeUser((user, done) => {
   done(null, user);
 });
@@ -365,10 +341,6 @@ app.get("/api/ping", (_req, res) => {
 });
 
 app.post("/api/rooms/join", async (req, res) => {
-  // get the information over the wire:
-  // - id of board to be joined
-  // - password for board
-  // - route should be authenticated so user is already in request
   try {
     if (!req.isAuthenticated || !req.user) {
       return res.status(401).send({
@@ -395,9 +367,6 @@ app.post("/api/rooms/join", async (req, res) => {
       userId: joiningUserId,
     });
 
-    // tried to do a server side redirect but kept getting access-control-allow-origin related errors
-    // res.setHeader("Access-Control-Allow-Origin", "localhost");
-    // res..status(302).location(`http://localhost:5173/play/${boardPlayerWithBoard.board.id}`);
     return res.status(200).json({ success: true, data: boardPlayerWithBoard });
   } catch (err: any) {
     return res.status(500).send(err?.message);
@@ -511,10 +480,8 @@ app.post("/log-out", (req, res, next) => {
 io.on("connection", (socket) => {
   // initial message to connector
   // io.to(socket.id).emit("new_message", {
-  //   id: "999",
   //   msg: "You are connected, your Id is " + socket.id,
   // });
-  // console.log("a user connected, id: ", socket.id);
 
   socket.on("cell:clicked", async (payload: SocketPayload["cell:toggled"]) => {
     const { boardId, userId, objectiveId, eventType } = payload;
@@ -532,11 +499,11 @@ io.on("connection", (socket) => {
     async ({ userId, boardId, color }: SocketPayload["player:ready"]) => {
       // update boardPlayer with color
       // emit to others that we're ready WITH color
-      console.log({ userId, socketId: socket.id, color });
+      const socketId = socket.id;
       await updatePlayerReady({ userId, boardId, color });
       socket
         .to(`board-${boardId}`)
-        .emit("player:waiting", { userId, socketId: socket.id, color });
+        .emit("player:waiting", { userId, socketId, color });
     }
   );
 
