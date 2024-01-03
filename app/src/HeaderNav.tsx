@@ -3,9 +3,11 @@ import { withHeaderLocations } from "./hooks/useHeader";
 import "./styles/header-nav.css";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { domain, client } from "./domain";
+import { useRef } from "react";
 
 export const HeaderNav = (): JSX.Element => {
   const { currentUser, loading, error } = useCurrentUser();
+  const navCheckRef = useRef<HTMLInputElement>(null);
   const { pathname } = useLocation();
   const logOut = async () => {
     await fetch(`${domain}/log-out`, {
@@ -28,8 +30,9 @@ export const HeaderNav = (): JSX.Element => {
   return (
     <nav className="full-width flex-even-row row-to-column">
       <label id="open-nav">
-        ▦
-        <input type="checkbox" />
+        <span style={{}}>▦ </span>
+        <span> Bingo</span>
+        <input type="checkbox" ref={navCheckRef} />
       </label>
       {withHeaderLocations.map((location) => {
         if (location.header) {

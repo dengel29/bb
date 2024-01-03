@@ -12,6 +12,7 @@ nav {
   padding: var(--size-3);
   max-width: 100vw;
   overflow-x: hidden;
+  min-height: 7vh;
 }
 
 .width-lg {
@@ -48,9 +49,17 @@ nav {
     align-content: flex-start;
     background-color: var(--surface-1);
     & label {
-      transform: -60deg;
+      margin-top: -5px;
+      margin-right: auto;
+      margin-bottom: var(--size-3);
+      transform: rotate(0deg);
       transform-origin: 20%;
-      transition: transform 0.2s ease;
+      transition: transform .4s ease;
+      & > span:nth-child(2) {
+        opacity: 1;
+        transition: opacity .2s ease;
+        transition-delay: .2s
+      }
       &:hover {
         cursor: pointer;
       }
@@ -89,7 +98,11 @@ nav {
       }
       height: 50vh;
       & label {
-        transform: rotate(60deg);
+        transform: rotate(-50deg);
+        & > span:nth-of-type(2) {
+          opacity: 0;
+          transition: opacity .1s ease
+        }
       }
       & :not(label) {
         transition: translate 0.3s ease;

@@ -2,6 +2,7 @@ import { Container } from "@radix-ui/themes";
 import { PropsWithChildren, useEffect } from "react";
 import { useHeader } from "./hooks/useHeader";
 import { HeaderNav } from "./HeaderNav";
+import "./index.css";
 
 type PageProps = { title: string } & PropsWithChildren;
 export const PageContainer = (props: PageProps) => {
@@ -12,7 +13,7 @@ export const PageContainer = (props: PageProps) => {
   return (
     <Container width="100%" style={{ overflowX: "hidden" }}>
       {header ? <HeaderNav /> : null}
-      <div style={{}}>{props.children}</div>
+      <div className="page-container">{props.children}</div>
     </Container>
   );
 };

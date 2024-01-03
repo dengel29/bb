@@ -84,7 +84,7 @@ export const CreateBoardForm = ({
         }}
       >
         <label>
-          <p>Room Name</p>
+          Room Name
           <input type="text" name="roomName" required />
         </label>
         <label>
