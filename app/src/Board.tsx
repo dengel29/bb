@@ -89,7 +89,8 @@ export const Board = ({
           tapZoomFactor={0}
           minZoom={0.9}
           verticalPadding={20}
-          horizontalPadding={20}
+          horizontalPadding={200}
+          enforceBoundsDuringZoom={false}
         >
           <Grid
             columns={"5"}
