@@ -18,6 +18,7 @@ import { CirclePicker } from "react-color";
 import { socketEmit, socketOn } from "./socket-actions";
 import { get, isSuccessResponse } from "./requests";
 import { Link } from "react-router-dom";
+import { HeaderNav } from "./HeaderNav";
 
 export const BoardPage = () => {
   const { currentUser, loading, error } = useCurrentUser();
@@ -386,6 +387,7 @@ export const BoardPage = () => {
 
   return (
     <>
+      <HeaderNav></HeaderNav>
       {socketError && (
         <div>
           <h3>{socketError.message}</h3>
