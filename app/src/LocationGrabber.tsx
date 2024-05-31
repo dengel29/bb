@@ -53,19 +53,25 @@ export function LocationGrabber({
   });
 
   const successCb: PositionCallback = async (position): Promise<void> => {
-    console.log(position);
     const { coords } = position;
     const { latitude, longitude } = coords;
     setLatlong({ lat: latitude, long: longitude });
   };
 
-  const handleLocationClick = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(successCb);
-    }
+  const error = () => {
+    alert(
+      "Please go to your browser settings to turn on geolocation privileges"
+    );
   };
 
-  console.log(location);
+  const handleLocationClick = (e: React.MouseEvent) => {
+    console.log(e);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(successCb, error);
+    } else {
+      console.log("FAILED REQUEST");
+    }
+  };
 
   return (
     <div
@@ -98,7 +104,7 @@ export function LocationGrabber({
           </p>
         </div>
       ) : null}
-      <button onClick={() => handleLocationClick()}>
+      <button onClick={handleLocationClick}>
         {location?.city ? "Refetch" : "Fetch"} my location
       </button>
       {/* <label
