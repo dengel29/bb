@@ -39,7 +39,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://bb.dngl.cc",
-  "http://192.168.33.26:5173",
+  "http://192.168.33.123:5173",
 ];
 
 const headers = (req: Request, res: ServerResponse, next: () => void) => {
