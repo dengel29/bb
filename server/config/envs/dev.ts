@@ -10,9 +10,9 @@ export function createLocalConfig() {
     DATABASE_URL: process.env.DATABASE_URL as string,
     // BARE_DOMAIN: "localhost",
     BARE_DOMAIN: "192.168.33.26",
-    // DOMAIN: "http://localhost:3000",
-    DOMAIN: "http://192.168.33.26:3000",
-    // CLIENT: "http://localhost:5173",
-    CLIENT: "http://192.168.33.26:5173",
+    DOMAIN: "http://localhost:3000",
+    // DOMAIN: "http://192.168.33.26:3000",
+    CLIENT: "http://localhost:5173",
+    // CLIENT: "http://192.168.33.26:5173",
   });
 }
