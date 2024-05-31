@@ -2,9 +2,9 @@
 
 
 nav {
-  background-position: 5cm  5cm;
-  background-size: 15px 15px;  
-  background-blend-mode:soft-light;
+  background-position: 5cm 5cm;
+  background-size: 15px 15px;
+  background-blend-mode: soft-light;
   background-image:
     linear-gradient(to right, var(--surface-1) 1px, transparent 1px),
     linear-gradient(to bottom, var(--surface-1) 1px, transparent 1px),
@@ -23,93 +23,115 @@ nav {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  & > *:not(button) {
+  align-items: center;
+
+  &>*:not(button) {
     margin-inline: var(--size-1);
-  } 
+  }
 }
 
 .active {
   text-decoration-line: underline;
   text-decoration-thickness: 4px;
-  text-decoration-skip-ink:none;
+  text-decoration-skip-ink: none;
   text-decoration-color: var(--color-splash-bright-1);
 }
 
 .row-to-column {
-  overflow:hidden;
-  margin-bottom:4vh;
+  overflow: hidden;
+  margin-bottom: 4vh;
+
   & label {
-    display:none
+    display: none
   }
-  @media (width <= 768px) {
+
+  @media (width <=768px) {
     width: 100vw;
     font-size: var(--size-6);
     flex-direction: column;
     justify-content: flex-start;
     align-content: flex-start;
     background-color: var(--surface-1);
+
     & label {
-      margin-top: -5px;
       margin-right: auto;
       margin-bottom: var(--size-3);
       transform: rotate(0deg);
       transform-origin: 20%;
       transition: transform .4s ease;
-      & > span:nth-child(2) {
+
+      &>span:nth-child(2) {
         opacity: 1;
         transition: opacity .2s ease;
         transition-delay: .2s
       }
+
       &:hover {
         cursor: pointer;
       }
+
       display:initial;
       align-self: flex-start;
+
       & input {
         opacity: 0;
       }
     }
+
     &:has(:not(:checked)) {
-      height: 5vh;
+      height: 10vh;
+
       & :not(label) {
-        translate: -100vw 0;
+        transform: translate(-100vw, 0);
       }
     }
+
     &:has(:checked) {
       --delay-inc: 0.05s;
+
       & :nth-child(2) {
         transition-delay: calc(var(--delay-inc) *1);
       }
+
       & :nth-child(3) {
-        
+
         transition-delay: calc(var(--delay-inc) *2);
       }
+
       & :nth-child(4) {
         transition-delay: calc(var(--delay-inc) *3);
       }
+
       & :nth-child(5) {
         transition-delay: calc(var(--delay-inc) *4);
       }
+
       & :nth-child(6) {
         transition-delay: calc(var(--delay-inc) *5);
       }
+
       & :nth-child(7) {
         transition-delay: calc(var(--delay-inc) *6);
       }
+
       height: 50vh;
+
       & label {
         transform: rotate(-50deg);
-        & > span:nth-of-type(2) {
+
+        &>span:nth-of-type(2) {
           opacity: 0;
           transition: opacity .1s ease
         }
       }
+
       & :not(label) {
         transition: translate 0.3s ease;
         display: initial;
-        translate: 0px 0px;
+        transform: translate(0px, 0px);
       }
     }
+
     transition: height 0.2s ease;
   }
 }
