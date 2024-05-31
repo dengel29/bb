@@ -94,10 +94,32 @@
 }
 
 .room-item {
+  button:hover {
+    filter: hue-rotate(-20deg);
+    opacity: .9;
+    color: black;
+    transition: all .2s
+  }
+
   & .btn.neutral {
     margin-inline: initial;
     padding: initial;
     width: 50%;
+    box-sizing: border-box;
+    border: 2px solid currentColor;
+  }
+
+  :has(.btn.disabled) {
+    border: 0px;
+    border-radius: 4px
+  }
+
+  & .btn.disabled::before {
+    border-radius: 4px 4px 0px 0px;
+    content: "You're in, press play to start";
+    background: var(--green-10);
+    width: 100%;
+    display: inline-block;
   }
 }
 
