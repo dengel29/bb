@@ -28,7 +28,17 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
   } | null>(null);
 
   const displayEntryForm = () => {
-    setShowForm(!showForm);
+    if (!currentUserInPlayers(room)) setShowForm(!showForm);
+  };
+
+  const currentUserInPlayers = (room: GetBoardDTO) => {
+    return (
+      currentUser &&
+      room?.boardPlayers &&
+      room?.boardPlayers.some(
+        (player: { userId: number }) => player.userId === currentUser?.id
+      )
+    );
   };
 
   async function submitHandler(
