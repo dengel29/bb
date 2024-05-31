@@ -159,11 +159,17 @@ export const BoardPage = () => {
     cellId: number; // TODO: make sure this typing is correct
     eventType: "claim" | "unclaim";
   }): void => {
+    if (!currentUser) {
+      throw new Error("No user");
+    }
+
     const myNewPoints = new Set(score.get("mine"));
     if (eventType === "claim") {
       myNewPoints.add(Number(cellId));
     } else if (eventType === "unclaim") {
       myNewPoints.delete(Number(cellId));
+    } else {
+      throw new Error(`unsupported event type: ${eventType}`);
     }
 
     score.set("mine", myNewPoints);
@@ -172,16 +178,15 @@ export const BoardPage = () => {
       ["mine", score.get("mine")],
     ]) as Score;
     setScore(newScore);
-    if (currentUser) {
-      const payload: SocketPayload["cell:toggled"] = {
-        cellId,
-        objectiveId: cellId,
-        eventType,
-        boardId: window.location.pathname.split("/")[2],
-        userId: currentUser?.id,
-      };
-      socketEmit("cell:clicked", payload);
-    }
+
+    const payload: SocketPayload["cell:toggled"] = {
+      cellId,
+      objectiveId: cellId,
+      eventType,
+      boardId: window.location.pathname.split("/")[2],
+      userId: currentUser?.id,
+    };
+    socketEmit("cell:clicked", payload);
   };
 
   socketOn<"player:joined">("player:joined", (payload): void => {
