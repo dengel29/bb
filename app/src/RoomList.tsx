@@ -12,10 +12,13 @@ export const RoomList = ({
       {rooms && (
         <div className="games-list__container">
           <h2>All Games</h2>
+          <hr style={{ padding: "10px", background: "grey" }} />
 
-          <div>
-            <p>No games on today, create one and invite your friends</p>
-          </div>
+          {!rooms && (
+            <div>
+              <p>No games on today, create one and invite your friends</p>
+            </div>
+          )}
 
           {rooms &&
             rooms.map((room) => {
