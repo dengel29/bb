@@ -70,6 +70,6 @@ export const useCurrentUser = () => {
         setError(error);
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [currentUser]);
   return { currentUser, loading: isLoading, error };
 };

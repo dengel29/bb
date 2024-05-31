@@ -182,9 +182,6 @@ export const BoardPage = () => {
       socketEmit("cell:clicked", payload);
     }
   };
-  // on("player:ready", (payload: PossiblePayloads) => {
-  //   console.log(payload);
-  // });
 
   socketOn<"player:joined">("player:joined", (payload): void => {
     if (!players || players instanceof Error) {
@@ -205,8 +202,6 @@ export const BoardPage = () => {
   });
 
   socketOn<"player:left">("player:left", (/**payload*/) => {
-    // const { socketId } = payload;
-    // console.log(`${players?.get(socketId)?.user} has left the room`);
     if (!players) {
       return;
     }

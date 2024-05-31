@@ -9,9 +9,8 @@ export function ConnectionState({
 }): JSX.Element {
   return (
     <>
-      {/* <div> */}
       <details open style={{ marginBlock: 0, paddingBlock: 0 }}>
-        <summary>
+        <summary style={{ listStyle: "none" }}>
           <div style={{ display: "flex" }}>
             {isConnected && <p>🟢</p>}
             {!isConnected && <p>🔴</p>}
@@ -36,7 +35,6 @@ export function ConnectionState({
             );
           })}
       </details>
-      {/* </div> */}
     </>
   );
 }

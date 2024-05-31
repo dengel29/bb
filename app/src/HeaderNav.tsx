@@ -30,8 +30,8 @@ export const HeaderNav = (): JSX.Element => {
   return (
     <nav className="full-width flex-even-row row-to-column">
       <label id="open-nav">
-        <span style={{}}>▦ </span>
-        <span> Bingo</span>
+        <span>▦</span>
+        <span>Bingo.Bike</span>
         <input type="checkbox" ref={navCheckRef} />
       </label>
       {withHeaderLocations.map((location) => {
@@ -45,21 +45,6 @@ export const HeaderNav = (): JSX.Element => {
           );
         }
       })}
-      {/* <Link to="/">
-        <h3>Home</h3>
-      </Link>
-      <Link to="/create-objectives">
-        <h3>Create objectives</h3>
-      </Link>
-      <Link to="/how-to-play">
-        <h3>How to play</h3>
-      </Link>
-      <Link to="/play">
-        <h3>Join a game</h3>
-      </Link>
-      <Link to="/profile">
-        <h3>Profile</h3>
-      </Link> */}
       {authLink}
     </nav>
   );
