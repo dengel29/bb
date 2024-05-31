@@ -3,7 +3,8 @@
 .main__container {
   display: grid;
   gap: var(--size-2);
-  @media (width >= 768px) {
+
+  @media (width >=768px) {
     grid-template-columns: 2fr 1fr;
     grid-template-rows: 1fr repeat;
     height: 100%;
@@ -11,6 +12,7 @@
 }
 
 .games-list__container {
+
   /* grid-column: 1/-1; */
   li {
     margin-block: 1em;
@@ -36,14 +38,16 @@
   display: flex;
   flex-direction: column;
   border-radius: var(--border-size-3);
-  width:100%;
-  
-  @media (width >= 768px) {
+  width: 100%;
+
+  @media (width >=768px) {
     height: fit-content;
     grid-column: 2;
-  };
-  
-  @media (width <= 768px) {
+  }
+
+  ;
+
+  @media (width <=768px) {
     display: flex;
     flex-direction: column;
     height: fit-content;
@@ -51,7 +55,9 @@
     & label {
       width: 100%;
       padding-inline: 2em;
-      & input, select {
+
+      & input,
+      select {
         height: 2.5em;
         width: 100%
       }
@@ -66,13 +72,17 @@
   & label {
     display: flex;
     flex-direction: column;
+
     & p {
       margin-block: 0px;
     }
+
     :has(select) {
       margin-inline-start: auto;
     }
-    &  select, input {
+
+    & select,
+    input {
       margin-block: var(--size-1) var(--size-3);
     }
   }
@@ -84,6 +94,7 @@
     border-radius: 3px;
     outline: 1px solid black;
   }
+
   select:focus {
     outline: 4px solid var(--blue-8);
   }
@@ -94,11 +105,36 @@
 }
 
 .room-item {
+  button:hover {
+    filter: hue-rotate(-20deg);
+    opacity: .9;
+    color: black;
+    transition: all .2s
+  }
+
+
   & .btn.neutral {
     margin-inline: initial;
     padding: initial;
     width: 50%;
+    box-sizing: border-box;
+    border: 2px solid currentColor;
+
   }
+
+  :has(.btn.disabled) {
+    border: 0px;
+    border-radius: 4px
+  }
+
+  & .btn.disabled::before {
+    border-radius: 4px 4px 0px 0px;
+    content: "You're in, press play to start";
+    background: var(--green-10);
+    width: 100%;
+    display: inline-block;
+  }
+
 }
 
 form.enter-room {
@@ -106,32 +142,39 @@ form.enter-room {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+
   & label {
     display: flex;
     flex-direction: column;
     width: 50%;
+
     & * {
       margin-block: 0;
-    } 
+    }
   }
+
   & button.btn {
     /* margin-block: 0; */
     margin: initial;
-    
+
   }
-  @media (width <= 768px) {
+
+  @media (width <=768px) {
 
     display: flex;
     flex-direction: column;
+
     & label {
       width: 100%;
       justify-content: space-between;
       height: 60px;
       margin-block: 1em;
+
       & input {
         height: 100%
       }
     }
+
     & button {
       align-self: flex-end
     }

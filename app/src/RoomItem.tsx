@@ -28,7 +28,17 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
   } | null>(null);
 
   const displayEntryForm = () => {
-    setShowForm(!showForm);
+    if (!currentUserInPlayers(room)) setShowForm(!showForm);
+  };
+
+  const currentUserInPlayers = (room: GetBoardDTO) => {
+    return (
+      currentUser &&
+      room?.boardPlayers &&
+      room?.boardPlayers.some(
+        (player: { userId: number }) => player.userId === currentUser?.id
+      )
+    );
   };
 
   async function submitHandler(
@@ -73,6 +83,8 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
     }
   }
 
+  const buttonStyle = currentUserInPlayers(room) ? "disabled" : "";
+
   return (
     <div>
       <div
@@ -86,22 +98,17 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
         }}
         className="room-item"
       >
-        <button className="btn neutral" onClick={displayEntryForm}>
+        <button
+          className={`btn neutral ${buttonStyle}`}
+          onClick={displayEntryForm}
+        >
           <p>{room.name}</p>
         </button>
-        {currentUser &&
-          room?.boardPlayers &&
-          room?.boardPlayers.map((player) => {
-            if (player.userId === currentUser?.id) {
-              return (
-                <Link to={`/play/${room.id}`} key={room.id}>
-                  <h3>Play!</h3>
-                </Link>
-              );
-            } else {
-              return null;
-            }
-          })}
+        {currentUserInPlayers(room) && (
+          <Link to={`/play/${room.id}`} key={room.id}>
+            <h3>Play!</h3>
+          </Link>
+        )}
       </div>
       {showForm && (
         <form
@@ -130,7 +137,7 @@ export const RoomItem = (props: { room: GetBoardDTO }): JSX.Element => {
         </p>
       )}
 
-      <hr />
+      <hr style={{ background: "var(--surface-1)" }} />
     </div>
   );
 };
